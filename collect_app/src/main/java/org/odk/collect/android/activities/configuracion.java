@@ -57,7 +57,7 @@ public class configuracion extends AppCompatActivity {
     final CuentaSession objcuentaSession= new CuentaSession();
     final ConfiguracionSession objconfiguracionSession= new ConfiguracionSession();
     String Estado="";
-    //fuente dyvenpro actualizado subir repositorio....
+    //fuente dyvenpro actualizado subir repositoriodd...
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
