@@ -70,6 +70,9 @@ import org.javarosa.form.api.FormEntryCaption;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.joda.time.LocalDateTime;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.odk.collect.android.R;
 import org.odk.collect.android.adapters.IconMenuListAdapter;
 import org.odk.collect.android.adapters.model.IconMenuItem;
@@ -82,6 +85,8 @@ import org.odk.collect.android.dao.helpers.InstancesDaoHelper;
 import org.odk.collect.android.database.BaseDatosEngine.BaseDatosEngine;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.BranchSession;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.CodigoSession;
+import org.odk.collect.android.database.BaseDatosEngine.Entidades.EstadoFormularioSession;
+import org.odk.collect.android.database.BaseDatosEngine.Entidades.EstadosFormulario;
 import org.odk.collect.android.database.BaseDatosEngine.EstructuraBD;
 import org.odk.collect.android.events.ReadPhoneStatePermissionRxEvent;
 import org.odk.collect.android.events.RxEventBus;
@@ -149,6 +154,7 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -1929,10 +1935,7 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
                         formController.getAuditEventLogger().logEvent(AuditEvent.AuditEventType.FORM_EXIT, true);
                         BranchSession obj= new
                                 BranchSession();
-                        if(obj.getE_code()!="") {
-                            startActivity(new Intent(getApplication(), FormChooserList.class)
-                                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
-                        }
+
                     }
                     removeTempInstance();
                     MediaManager.INSTANCE.revertChanges();
@@ -2585,6 +2588,7 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
     }
     private boolean cambiarestado(String codigo,String uri){
         try {
+
             BaseDatosEngine usdbh = new BaseDatosEngine();
             usdbh = usdbh.open();
             BranchSession objB = new BranchSession();
@@ -2598,6 +2602,13 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
                     cursor.getString(0);
                     existefisico = true;
                 } while (cursor.moveToNext());
+            }
+            String[] parts = codigo.split("-");
+            String nuevoodigo="";
+            if (parts.length >=1)
+            {
+                nuevoodigo=parts[0].toString();
+                codigo=nuevoodigo;
             }
 
             Engine_util objbuscar = new Engine_util();
@@ -2615,7 +2626,7 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
 
             CodigoSession codse = new CodigoSession();
 
-            if (objB.getE_EstadoFormulario().toString().equals("nuevo")) {
+            if (objB.getE_nuevo().toString().equals("nuevo")) {
                 usdbh = usdbh.open();
                 ContentValues Objdatosnuevos = new ContentValues();
                 Objdatosnuevos.put(EstructuraBD.CabecerasCodigos.codeunico, codigo);
@@ -2678,6 +2689,162 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
         BaseDatosEngine usdbh = new BaseDatosEngine();
 
     }
+    public List<EstadosFormulario> consultaformularios(String uri){
+        BaseDatosEngine usdbh = new BaseDatosEngine();
+        usdbh = usdbh.open();
+        ArrayList<EstadosFormulario> listaEstadosFormularios= new ArrayList<>();
+        EstadosFormulario dato = null;
+
+        Cursor listardatos=usdbh.ResumenDatos("select * from EstadoFormulario where uri='"+uri+"'");
+        usdbh.close();
+        if(listardatos!=null) {
+            if (listardatos.moveToFirst()) {
+                do {
+                    dato= new EstadosFormulario();
+                    dato.setID(listardatos.getInt(0));
+                    dato.setIdAccount(listardatos.getString(1));
+                    dato.setIdCampania(listardatos.getString(2));
+                    dato.setCode(listardatos.getString(3));
+                    dato.setRuta(listardatos.getString(4));
+                    dato.setEstadovisita(listardatos.getString(5));
+                    dato.setEstadointeres(listardatos.getString(6));
+                    dato.setNombrelocal(listardatos.getString(7));
+                    dato.setDireccion(listardatos.getString(8));
+                    dato.setReferencia(listardatos.getString(9));
+                    dato.setBarrio(listardatos.getString(10));
+                    dato.setLatitud(listardatos.getString(11));
+                    dato.setLongitud(listardatos.getString(12));
+                    dato.setNombrepro(listardatos.getString(13));
+                    dato.setApellidopropi(listardatos.getString(14));
+                    dato.setTelefono(listardatos.getString(15));
+                    dato.setCelular(listardatos.getString(16));
+                    dato.setFecha(listardatos.getString(17));
+                    dato.setEstadoenvio(listardatos.getString(18));
+                    dato.setUri(listardatos.getString(19));
+                    dato.setImei(listardatos.getString(20));
+                    dato.setCedula(listardatos.getString(21));
+                    listaEstadosFormularios.add(dato);
+                } while (listardatos.moveToNext());
+            }
+        }
+        return listaEstadosFormularios;
+
+    }
+    public String enviarformulariosincompletos(String uri){
+        BaseDatosEngine usdbh = new BaseDatosEngine();
+        usdbh = usdbh.open();
+        List<EstadosFormulario> listardatos= new ArrayList<>();
+        listardatos=consultaformularios(uri);
+        String jSonFormulario = "";
+        JSONArray jsonArrayFormulario = null;
+        JSONObject jsonFormulario;
+        jsonArrayFormulario = new JSONArray();
+        for(EstadosFormulario x : listardatos) {
+
+            jsonFormulario = new JSONObject();
+            try {
+                jsonFormulario.put("id", x.getID());
+                jsonFormulario.put("idAccount", x.getIdAccount());
+                jsonFormulario.put("IdCampania", x.getIdCampania());
+                jsonFormulario.put("code", x.getCode());
+                jsonFormulario.put("ruta", x.getRuta());
+                jsonFormulario.put("estadovisita", x.getEstadovisita());
+                jsonFormulario.put("estadointeres", x.getEstadointeres());
+                jsonFormulario.put("nombrelocal", x.getNombrelocal().replace("Ñ","|"));
+                jsonFormulario.put("direccion", x.getDireccion().replace("Ñ","|"));
+                jsonFormulario.put("referencia", x.getReferencia());
+                jsonFormulario.put("barrio", x.getBarrio());
+                jsonFormulario.put("latitud",x.getLatitud());
+                jsonFormulario.put("longitud", x.getLongitud());
+                jsonFormulario.put("nombrepro", x.getNombrepro().replace("Ñ","|"));
+                jsonFormulario.put("apellidopropi", x.getApellidopropi());
+                jsonFormulario.put("telefono", x.getTelefono());
+                jsonFormulario.put("celular", x.getCelular());
+                jsonFormulario.put("fecha", x.getFecha());
+                jsonFormulario.put("estadoenvio", x.getEstadoenvio());
+                jsonFormulario.put("uri", x.getUri());
+                jsonFormulario.put("imei",x.getImei());
+                jsonFormulario.put("cedula",x.getCedula());
+
+                jsonArrayFormulario.put(jsonFormulario);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        jSonFormulario = jsonArrayFormulario.toString();
+        return jSonFormulario;
+    }
+    public void gurdarenviarformulariopartes(String uri,String estado)
+    {
+        EstadoFormularioSession objseccion= new EstadoFormularioSession();
+        ContentValues Objdatos = new ContentValues();
+        String fechaHora = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",
+                Locale.getDefault()).format(new Date());
+        BaseDatosEngine usdbh = new BaseDatosEngine();
+        usdbh = usdbh.open();
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.idAccount, objseccion.getE_idAccount());
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.IdCampania , objseccion.getE_IdCampania());
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.code , objseccion.getE_code());
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.ruta , objseccion.getE_ruta());
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.estadovisita , objseccion.getE_estadovisita());
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.estadointeres, objseccion.getE_estadointeres());
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.nombrelocal , objseccion.getE_nombrelocal());
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.direccion , objseccion.getE_direccion());
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.referencia , objseccion.getE_referencia());
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.barrio , objseccion.getE_barrio());
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.latitud, objseccion.getE_latitud());
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.longitud , objseccion.getE_longitud());
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.nombrepro , objseccion.getE_nombrepro());
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.apellidopropi, objseccion.getE_apellidopropi());
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.telefono , objseccion.getE_telefono());
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.celular, objseccion.getE_celular());
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.fecha , fechaHora);
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.estadoenvio , "guardado");
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.uri ,uri);
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.imei, objseccion.getE_imei());
+        Objdatos.put(EstructuraBD.CabeceraEstadoformulario.cedula, objseccion.getE_cedula());
+        Cursor existe=usdbh.ResumenDatos("select * from EstadoFormulario where uri='"+uri+"'");
+        String op="I";
+        if(existe!=null) {
+            if (existe.moveToFirst()) {
+                do {
+                    op="M";
+
+                    ContentValues ObjdatosModificar = new ContentValues();
+                    ObjdatosModificar.put(EstructuraBD.CabeceraEstadoformulario.idAccount, objseccion.getE_idAccount());
+                    ObjdatosModificar.put(EstructuraBD.CabeceraEstadoformulario.IdCampania , objseccion.getE_IdCampania());
+                    ObjdatosModificar.put(EstructuraBD.CabeceraEstadoformulario.code , objseccion.getE_code());
+                    ObjdatosModificar.put(EstructuraBD.CabeceraEstadoformulario.ruta , objseccion.getE_ruta());
+                    ObjdatosModificar.put(EstructuraBD.CabeceraEstadoformulario.estadovisita , objseccion.getE_estadovisita());
+                    ObjdatosModificar.put(EstructuraBD.CabeceraEstadoformulario.estadointeres, objseccion.getE_estadointeres());
+                    ObjdatosModificar.put(EstructuraBD.CabeceraEstadoformulario.nombrelocal , objseccion.getE_nombrelocal());
+                    ObjdatosModificar.put(EstructuraBD.CabeceraEstadoformulario.direccion , objseccion.getE_direccion());
+                    ObjdatosModificar.put(EstructuraBD.CabeceraEstadoformulario.referencia , objseccion.getE_referencia());
+                    ObjdatosModificar.put(EstructuraBD.CabeceraEstadoformulario.barrio , objseccion.getE_barrio());
+                    ObjdatosModificar.put(EstructuraBD.CabeceraEstadoformulario.nombrepro , objseccion.getE_nombrepro());
+                    ObjdatosModificar.put(EstructuraBD.CabeceraEstadoformulario.apellidopropi, objseccion.getE_apellidopropi());
+                    ObjdatosModificar.put(EstructuraBD.CabeceraEstadoformulario.telefono , objseccion.getE_telefono());
+                    ObjdatosModificar.put(EstructuraBD.CabeceraEstadoformulario.celular, objseccion.getE_celular());
+                    ObjdatosModificar.put(EstructuraBD.CabeceraEstadoformulario.fecha , fechaHora);
+                    ObjdatosModificar.put(EstructuraBD.CabeceraEstadoformulario.cedula, objseccion.getE_cedula());
+                    String where = "uri='" + uri + "'";
+                    usdbh.ActualizarTablaestado(ObjdatosModificar, where);
+
+                } while (existe.moveToNext());
+            }
+        }
+        if(op=="I") {
+            usdbh.insertardatosFormulario(Objdatos);
+            usdbh.close();
+
+        }
+        ThreadEnvio te = new ThreadEnvio(enviarformulariosincompletos(uri));
+        Thread t = new Thread(te);
+        t.start();
+
+
+    }
+
     @Override
     public void savingComplete(SaveResult saveResult) {
         dismissDialog(SAVING_DIALOG);
@@ -2693,115 +2860,15 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
                 ToastUtils.showShortToast(R.string.data_saved_ok);
                 formController.getAuditEventLogger().logEvent(AuditEvent.AuditEventType.FORM_SAVE, false);
                 cambiarestado(codigobranch,uri);
+                gurdarenviarformulariopartes(uri,"Incompleto");
                 break;
             case SaveToDiskTask.SAVED_AND_EXIT:
                 ToastUtils.showShortToast(R.string.data_saved_ok);
                 formController.getAuditEventLogger().logEvent(AuditEvent.AuditEventType.FORM_SAVE, false);
-                if (saveResult.isComplete()) {
-                    if(objFormularios.getE_code()!="") {
-
-                        if (objFormularios.getE_fmedicion().equals(Collect.getInstance().getFormController().getFormTitle())) {
-                            objFormularios.setE_festadomedicion("ok");
-                            usdbh = usdbh.open();
-                            ContentValues Objdatos = new ContentValues();
-                            Objdatos.put(EstructuraBD.CabecerasEngine.formulariomedicion, "ok");
-                            Objdatos.put(EstructuraBD.CabecerasEngine.EstadoFormulario, objFormularios.getE_EstadoFormulario());
-                            String where2 = "code='" + objFormularios.getE_code() + "'";
-                            usdbh.ActualizarTabla(Objdatos, where2);
-                            usdbh.close();
-                            //cambiarestado(codigobranch,uri);
-                            startActivity(new Intent(this, FormChooserList.class)
-                                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK));
-
-
-                        }
-                        if (objFormularios.getE_factividades().equals(Collect.getInstance().getFormController().getFormTitle())) {
-                            objFormularios.setE_festadoactividades("ok");
-                            usdbh = usdbh.open();
-                            ContentValues Objdatos = new ContentValues();
-                            Objdatos.put(EstructuraBD.CabecerasEngine.formularioactividades, "ok");
-                            Objdatos.put(EstructuraBD.CabecerasEngine.EstadoFormulario, objFormularios.getE_EstadoFormulario());
-                            String where2 = "code='" + objFormularios.getE_code() + "'";
-                            usdbh.ActualizarTabla(Objdatos, where2);
-
-                            usdbh.close();
-                            startActivity(new Intent(this, FormChooserList.class)
-                                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK));
-
-
-
-                        }
-                        if (objFormularios.getE_fpromocion().equals(Collect.getInstance().getFormController().getFormTitle())) {
-                            objFormularios.setE_festadopromocion("ok");
-                            usdbh = usdbh.open();
-                            ContentValues Objdatos = new ContentValues();
-                            Objdatos.put(EstructuraBD.CabecerasEngine.formulariopromocion, "ok");
-                            String where2 = "code='" + objFormularios.getE_code() + "'";
-                            usdbh.ActualizarTabla(Objdatos, where2);
-                            usdbh.close();
-                            FormChooserList frch= new FormChooserList();
-                            frch.finish();
-                            startActivity(new Intent(this, FormChooserList.class)
-                                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK));
-
-                        }
-                        if (objFormularios.getE_fpercha().equals(Collect.getInstance().getFormController().getFormTitle())) {
-                            objFormularios.setE_festadopercha("ok");
-                            usdbh = usdbh.open();
-                            ContentValues Objdatos = new ContentValues();
-                            Objdatos.put(EstructuraBD.CabecerasEngine.formulariopercha, "ok");
-                            String where2 = "code='" + objFormularios.getE_code() + "'";
-                            usdbh.ActualizarTabla(Objdatos, where2);
-                            usdbh.close();
-                            FormChooserList frch= new FormChooserList();
-                            frch.finish();
-
-                            startActivity(new Intent(this, FormChooserList.class)
-                                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK));
-
-                        }
-                        if (objFormularios.getE_fpop().equals(Collect.getInstance().getFormController().getFormTitle())) {
-                            objFormularios.setE_festadopop("ok");
-                            usdbh = usdbh.open();
-                            ContentValues Objdatos = new ContentValues();
-                            Objdatos.put(EstructuraBD.CabecerasEngine.formulariopop, "ok");
-                            String where2 = "code='" + objFormularios.getE_code() + "'";
-                            usdbh.ActualizarTabla(Objdatos, where2);
-                            usdbh.close();
-                            FormChooserList frch= new FormChooserList();
-                            frch.finish();
-
-                            startActivity(new Intent(this, FormChooserList.class)
-                                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK));
-
-                        }
-                        formController.getAuditEventLogger().logEvent(AuditEvent.AuditEventType.FORM_EXIT, false);
-                        // Force writing of audit since we are exiting
-                        formController.getAuditEventLogger().logEvent(AuditEvent.AuditEventType.FORM_FINALIZE, true);
-
-                        // Request auto-send if app-wide auto-send is enabled or the form that was just
-                        // finalized specifies that it should always be auto-sent.
-                        String formId = getFormController().getFormDef().getMainInstance().getRoot().getAttributeValue("", "id");
-                        if (AutoSendWorker.formShouldBeAutoSent(formId, GeneralSharedPreferences.isAutoSendEnabled())) {
-                            requestAutoSend();
-                        }
-                    }else{
-                        cambiarestado(codigobranch,uri);
-                        startActivity(new Intent(this, principal.class)
-                                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
-
-                    }
-
-
-                } else {
-                    cambiarestado(codigobranch,uri);
-                    // Force writing of audit since we are exiting
-                    formController.getAuditEventLogger().logEvent(AuditEvent.AuditEventType.FORM_EXIT, true);
-                    startActivity(new Intent(this, FormChooserList.class)
-                            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
-                }
-
+                cambiarestado(codigobranch,uri);
+                gurdarenviarformulariopartes(uri,"Completo");
                 finishReturnInstance();
+                cambiarestado(codigobranch,uri);
                 break;
             case SaveToDiskTask.SAVE_ERROR:
                 String message;

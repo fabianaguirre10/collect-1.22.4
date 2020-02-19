@@ -60,6 +60,28 @@ public class InstancesDao {
 
         return cursorLoader;
     }
+    public Cursor getUnsentInstancesCursorSave(CharSequence charSequence, String sortOrder) {
+        Cursor cursor;
+        String selection =
+                InstanceProviderAPI.InstanceColumns.STATUS + " ==? and "
+                        + InstanceProviderAPI.InstanceColumns.DISPLAY_NAME + " LIKE ?";
+        String[] selectionArgs = {
+                InstanceProviderAPI.STATUS_INCOMPLETE,
+                "%" + charSequence + "%"};
+        cursor = getInstancesCursor(null, selection, selectionArgs, sortOrder);
+        return cursor;
+    }
+    public Cursor getUnsentInstancesCursorfnish(CharSequence charSequence, String sortOrder) {
+        Cursor cursor;
+        String selection =
+                InstanceProviderAPI.InstanceColumns.STATUS + " ==? and "
+                        + InstanceProviderAPI.InstanceColumns.DISPLAY_NAME + " LIKE ?";
+        String[] selectionArgs = {
+                InstanceProviderAPI.STATUS_SUBMITTED,
+                "%" + charSequence + "%"};
+        cursor = getInstancesCursor(null, selection, selectionArgs, sortOrder);
+        return cursor;
+    }
     public Cursor getUnsentInstancesCursor(String sortOrder) {
         String selection = InstanceProviderAPI.InstanceColumns.STATUS + " !=? ";
         String[] selectionArgs = {InstanceProviderAPI.STATUS_SUBMITTED};

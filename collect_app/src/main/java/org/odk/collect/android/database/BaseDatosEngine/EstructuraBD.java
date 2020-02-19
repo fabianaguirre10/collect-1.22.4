@@ -32,14 +32,7 @@ public class EstructuraBD {
         String TypeBusiness="TypeBusiness";
         String Cedula="Cedula";
         String ESTADOAGGREGATE="ESTADOAGGREGATE";
-        String comment="comment";
-        String formulariomedicion="FMEDICION";
-        String formulariopercha="FPERCHA";
-        String formulariopop ="FPOP";
-        String formulariopromocion ="FPROMOCION";
-        String formularioactividades ="FACTIVIDADES";
-        String actividades  ="actividades";
-
+        String Foto_Exterior="Foto_Exterior";
     }
     public static class CabecerasEngine implements ColumnasEngine {
         public static String generarIdCabeceraPedido() {
@@ -203,6 +196,37 @@ public class EstructuraBD {
         }
 
     }
+    interface ColumnasEstadoFormulario{
 
+         String idAccount="idAccount"  ;
+         String IdCampania="IdCampania" ;
+         String code="code" ;
+         String ruta="ruta" ;
+         String estadovisita="estadovisita" ;
+         String estadointeres="estadointeres" ;
+         String nombrelocal="nombrelocal" ;
+         String direccion="direccion" ;
+         String referencia="referencia" ;
+         String barrio="barrio" ;
+         String latitud="latitud" ;
+         String longitud="longitud" ;
+         String nombrepro="nombrepro" ;
+         String apellidopropi="apellidopropi" ;
+         String telefono="telefono" ;
+         String celular="celular" ;
+         String imei="imei" ;
+         String fecha="fecha" ;
+        String estadoenvio="estadoenvio" ;
+        String uri="uri" ;
+        String cedula="cedula" ;
+
+
+    }
+    public static class CabeceraEstadoformulario implements ColumnasEstadoFormulario {
+        public static String generarIdCabeceraPedido() {
+            return "CP-" + UUID.randomUUID().toString();
+        }
+
+    }
 
 }

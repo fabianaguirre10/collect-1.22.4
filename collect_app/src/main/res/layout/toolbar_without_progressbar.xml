@@ -9,6 +9,6 @@
     app:contentInsetEnd="0dp"
     app:contentInsetStart="0dp"
     app:contentInsetStartWithNavigation="0dp"
-    app:navigationIcon="@mipmap/iconochariotnew"
+    app:navigationIcon="@drawable/notes2"
     app:titleTextColor="@color/black"
     />

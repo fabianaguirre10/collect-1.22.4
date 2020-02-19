@@ -69,18 +69,7 @@
                 android:paddingRight="10dp"
                 android:paddingStart="10dp">
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="10dp"/>
 
-                <Button
-                    android:id="@+id/enter_data"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="20dp"
-                    android:textAllCaps="false"
-                    android:textSize="21sp"
-                    android:textStyle="normal"/>
 
                 <View
                     android:layout_width="match_parent"
@@ -149,6 +138,19 @@
                     android:textAllCaps="false"
                     android:textSize="21sp"
                     android:textStyle="normal"/>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"/>
+
+                <Button
+                    android:id="@+id/enter_data"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="20dp"
+                    android:textAllCaps="false"
+                    android:textSize="21sp"
+                    android:textStyle="normal"
+                    android:visibility="invisible"/>
             </LinearLayout>
 
         </ScrollView>

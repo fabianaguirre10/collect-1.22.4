@@ -11,7 +11,11 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
 import org.odk.collect.android.activities.Engine_util;
+import org.odk.collect.android.dao.InstancesDao;
+import org.odk.collect.android.database.BaseDatosEngine.Entidades.EstadosFormulario;
 import org.odk.collect.android.fragments.Activos;
+import org.odk.collect.android.fragments.EstadosFinalizados;
+import org.odk.collect.android.fragments.EstadosFormularios;
 import org.odk.collect.android.fragments.mapa;
 
 public class SimpleFragmentPagerAdapter extends FragmentPagerAdapter {
@@ -20,9 +24,11 @@ public class SimpleFragmentPagerAdapter extends FragmentPagerAdapter {
     String numeroruta,_CodigoLocal;
     Engine_util objutil;
     int finalizadosE;
+    int estadoFinalizado;
     int activosE;
+    int mapaC;
     Bundle args = new Bundle();
-    public SimpleFragmentPagerAdapter(Context context, FragmentManager fm, String ruta, String CodigoLocal) {
+    public SimpleFragmentPagerAdapter(Context context, FragmentManager fm, String ruta,String CodigoLocal) {
         super(fm);
         numeroruta=ruta;
         _CodigoLocal=CodigoLocal;
@@ -30,25 +36,30 @@ public class SimpleFragmentPagerAdapter extends FragmentPagerAdapter {
         args.putString("Codigo",_CodigoLocal );
         objutil= new Engine_util();
         String where = "where 1=1 ";
-        where = "where 1=1    ";
+        where = "where 1=1 and ESTADOAGGREGATE <>'D' and uriformulario = ''  ";
         where = where + " and  rutaaggregate ='" + ruta + "' ";
         Cursor cursorActivos = objutil.ContarEstado(where);
         where = "where 1=1 ";
-        where = "where 1=1  ";
+        where = "where 1=1 and (uriformulario <> '' or ESTADOAGGREGATE =='D') ";
         where = where + " and  rutaaggregate ='" + ruta + "' ";
         Cursor cursorFinalizados = objutil.ContarEstado(where);
-        if (cursorFinalizados.moveToFirst()) {
 
-            do {
-                finalizadosE=cursorFinalizados.getInt(0);
-            } while (cursorFinalizados.moveToNext());
-        }
+
+        Cursor cursorin;
+        cursorin = new InstancesDao().getUnsentInstancesCursorSave("","");
+        finalizadosE=cursorin.getCount();
+
+        Cursor cursorfin;
+        cursorfin = new InstancesDao().getUnsentInstancesCursorfnish("","");
+        estadoFinalizado=cursorfin.getCount();
+
         if (cursorActivos.moveToFirst()) {
 
             do {
                 activosE=cursorActivos.getInt(0);
             } while (cursorActivos.moveToNext());
         }
+        mapaC=activosE+finalizadosE;
         mContext = context;
     }
 
@@ -59,11 +70,16 @@ public class SimpleFragmentPagerAdapter extends FragmentPagerAdapter {
             Fragment activo =new Activos();
             activo.setArguments(args);
             return activo;
-        /*} else if (position==1){
-            Fragment finalizados =new Finalizados();
+        } else if (position==1){
+            EstadosFormularios finalizados =new EstadosFormularios();
             finalizados.setArguments(args);
-            return finalizados;*/
-        }else
+            return finalizados;
+        } else if (position==2  ){
+            EstadosFinalizados finalizados =new EstadosFinalizados();
+            finalizados.setArguments(args);
+            return finalizados;
+        }
+        else
         {
             Fragment mapa =new mapa();
             return mapa;
@@ -73,7 +89,7 @@ public class SimpleFragmentPagerAdapter extends FragmentPagerAdapter {
     // This determines the number of tabs
     @Override
     public int getCount() {
-        return 2;
+        return 4;
     }
 
     // This determines the title for each tab
@@ -83,10 +99,12 @@ public class SimpleFragmentPagerAdapter extends FragmentPagerAdapter {
         switch (position) {
             case 0:
                 return "Pendientes("+ activosE+")";
-            /*case 1:
-                return "Finalizados("+ finalizadosE+")";*/
             case 1:
-                return "Ubicación("+ activosE+")";
+                return "Incompletos("+ finalizadosE+")";
+            case 2:
+                return "Enviados("+ estadoFinalizado+")";
+            case 3:
+                return "Ubicación("+ mapaC+")";
 
             default:
                 return null;

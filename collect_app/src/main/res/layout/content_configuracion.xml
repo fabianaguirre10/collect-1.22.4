@@ -48,7 +48,7 @@
             tools:ignore="MissingConstraints">
             <Spinner
                 android:id="@+id/cmbcampaniaCL"
-                android:layout_width="350dp"
+                android:layout_width="325dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="25dp"
                 android:background="@android:drawable/btn_dropdown"
@@ -62,7 +62,7 @@
                 android:layout_marginTop="25dp"
                 />
 
-        </LinearLayout>
+ </LinearLayout>
   <ImageView
             android:id="@+id/imageView6"
             android:layout_width="wrap_content"

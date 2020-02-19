@@ -17,15 +17,18 @@ package org.odk.collect.android.tasks;
 import com.google.android.gms.analytics.HitBuilders;
 
 import org.odk.collect.android.R;
+import org.odk.collect.android.activities.EjecutarWebApi;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.dto.Instance;
 import org.odk.collect.android.http.OpenRosaHttpInterface;
 import org.odk.collect.android.logic.PropertyManager;
+import org.odk.collect.android.provider.InstanceProviderAPI;
 import org.odk.collect.android.upload.InstanceServerUploader;
 import org.odk.collect.android.upload.UploadAuthRequestedException;
 import org.odk.collect.android.upload.UploadException;
 import org.odk.collect.android.utilities.WebCredentialsUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -48,7 +51,8 @@ public class InstanceServerUploaderTask extends InstanceUploaderTask {
     private String completeDestinationUrl;
     private String customUsername;
     private String customPassword;
-
+    List<String> formularios= new ArrayList<>();
+    String imei="";
     public InstanceServerUploaderTask() {
         Collect.getInstance().getComponent().inject(this);
     }
@@ -62,7 +66,7 @@ public class InstanceServerUploaderTask extends InstanceUploaderTask {
 
         String deviceId = new PropertyManager(Collect.getInstance().getApplicationContext())
                     .getSingularProperty(PropertyManager.withUri(PropertyManager.PROPMGR_DEVICE_ID));
-
+        imei=deviceId;
         for (int i = 0; i < instancesToUpload.size(); i++) {
             if (isCancelled()) {
                 return outcome;
@@ -83,6 +87,8 @@ public class InstanceServerUploaderTask extends InstanceUploaderTask {
                                 .setAction("HTTP")
                                 .setLabel(Collect.getFormIdentifierHash(instance.getJrFormId(), instance.getJrVersion()))
                                 .build());
+
+                formularios.add(instance.getJrFormId());
             } catch (UploadAuthRequestedException e) {
                 outcome.authRequestingServer = e.getAuthRequestingServer();
                 // Don't add the instance that caused an auth request to the map because we want to
@@ -100,9 +106,14 @@ public class InstanceServerUploaderTask extends InstanceUploaderTask {
     @Override
     protected void onPostExecute(Outcome outcome) {
         super.onPostExecute(outcome);
-
         // Clear temp credentials
         clearTemporaryCredentials();
+            for (String x: formularios) {
+                //llamar api david
+                EjecutarWebApi tarea = new EjecutarWebApi();
+                tarea.execute("http://geomardis6728.cloudapp.net/msbancoGuayaquil/api/MigrationTask?IMEI="+imei.replace("imei:","")+"&_form="+x);
+            }
+
     }
 
     @Override

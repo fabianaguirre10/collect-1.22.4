@@ -30,115 +30,8 @@ public class  BranchSession  {
     public static  String e_Phone="Phone";
     public  static  String e_Cedula="e_Cedula";
     public static  String e_ESTADOAGGREGATE="e_ESTADOAGGREGATE";
-    public static  String e_comment="e_comment";
-    public  static  String e_festadoactividades="I";
-    public  static  String e_festadomedicion="I";
-    public static  String e_festadopercha="I";
-    public static  String e_festadopop="I";
-    public  static  String e_festadopromocion="I";
-    public static  String e_fmedicion="1. Medición";
-    public static  String e_factividades="1. Actividades";
-    public static  String e_fpercha="2. Exhibición Esp. - Convenio";
-    public static  String e_fpop="3. POP - Promoción";
-    public static  String e_fpromocion="4. Percha";
-    public static  String e_actividades="";
+    public static  String e_fotoexterior="e_fotoexterior";
 
-    public static String getE_festadoactividades() {
-        return e_festadoactividades;
-    }
-
-    public static void setE_festadoactividades(String e_festadoactividades) {
-        BranchSession.e_festadoactividades = e_festadoactividades;
-    }
-
-    public static String getE_factividades() {
-        return e_factividades;
-    }
-
-    public static void setE_factividades(String e_factividades) {
-        BranchSession.e_factividades = e_factividades;
-    }
-
-    public static String getE_actividades() {
-        return e_actividades;
-    }
-
-    public static void setE_actividades(String e_actividades) {
-        BranchSession.e_actividades = e_actividades;
-    }
-
-
-    public static String getE_fmedicion() {
-        return e_fmedicion;
-    }
-
-    public static void setE_fmedicion(String e_fmedicion) {
-        BranchSession.e_fmedicion = e_fmedicion;
-    }
-
-    public static String getE_fpercha() {
-        return e_fpercha;
-    }
-
-    public static void setE_fpercha(String e_fpercha) {
-        BranchSession.e_fpercha = e_fpercha;
-    }
-
-    public static String getE_fpop() {
-        return e_fpop;
-    }
-
-    public static void setE_fpop(String e_fpop) {
-        BranchSession.e_fpop = e_fpop;
-    }
-
-    public static String getE_fpromocion() {
-        return e_fpromocion;
-    }
-
-    public static void setE_fpromocion(String e_fpromocion) {
-        BranchSession.e_fpromocion = e_fpromocion;
-    }
-
-    public static String getE_festadomedicion() {
-        return e_festadomedicion;
-    }
-
-    public static void setE_festadomedicion(String e_festadomedicion) {
-        BranchSession.e_festadomedicion = e_festadomedicion;
-    }
-
-    public static String getE_festadopercha() {
-        return e_festadopercha;
-    }
-
-    public static void setE_festadopercha(String e_festadopercha) {
-        BranchSession.e_festadopercha = e_festadopercha;
-    }
-
-    public static String getE_festadopop() {
-        return e_festadopop;
-    }
-
-    public static void setE_festadopop(String e_festadopop) {
-        BranchSession.e_festadopop = e_festadopop;
-    }
-
-    public static String getE_festadopromocion() {
-        return e_festadopromocion;
-    }
-
-    public static void setE_festadopromocion(String e_festadopromocion) {
-        BranchSession.e_festadopromocion = e_festadopromocion;
-    }
-
-    public static String getE_comment() {
-        return e_comment;
-    }
-
-    public static void setE_comment(String e_comment) {
-        BranchSession.e_comment = e_comment;
-    }
 
     public static String getE_ESTADOAGGREGATE() {
         return e_ESTADOAGGREGATE;
@@ -148,7 +41,13 @@ public class  BranchSession  {
         BranchSession.e_ESTADOAGGREGATE = e_ESTADOAGGREGATE;
     }
 
+    public static String getE_fotoexterior() {
+        return e_fotoexterior;
+    }
 
+    public static void setE_fotoexterior(String e_fotoexterior) {
+        BranchSession.e_fotoexterior = e_fotoexterior;
+    }
 
     public static String getE_Cedula() {
         return e_Cedula;

@@ -36,7 +36,7 @@ public class VersionHidingCursorAdapter extends SimpleCursorAdapter {
     private final ViewBinder originalBinder;
 
     public VersionHidingCursorAdapter(String versionColumnName, Context context, int layout,
-            Cursor c, String[] from, int[] to) {
+                                      Cursor c, String[] from, int[] to) {
         super(context, layout, c, from, to);
         this.versionColumnName = versionColumnName;
         ctxt = context;
@@ -45,67 +45,19 @@ public class VersionHidingCursorAdapter extends SimpleCursorAdapter {
 
             @Override
             public boolean setViewValue(View view, Cursor cursor,
-                    int columnIndex) {
+                                        int columnIndex) {
                 String columnName = cursor.getColumnName(columnIndex);
-                if (!columnName.equals(VersionHidingCursorAdapter.this.versionColumnName)&& !columnName.equals("displayName")) {
-                    view.setVisibility(View.VISIBLE);
+                if (!columnName.equals(VersionHidingCursorAdapter.this.versionColumnName)) {
                     return originalBinder != null && originalBinder.setViewValue(view, cursor, columnIndex);
                 } else {
-                    if (columnName.equals("displayName")) {
-                        String nameform = cursor.getString(columnIndex);
-                        TextView vn = (TextView) view;
-                        BranchSession objformulario = new BranchSession();
-                        if (nameform != null) {
-                            if (objformulario.getE_festadomedicion().equals("ok") && objformulario.getE_fmedicion().equals(nameform) & !objformulario.getE_EstadoFormulario().equals("cerrado")) {
-                                vn.setText(nameform + "...FINALIZADO");
-                                vn.setTextColor(Color.GREEN);
-                            } else if (objformulario.getE_festadomedicion().equals("ok") && objformulario.getE_fmedicion().equals(nameform) && objformulario.getE_EstadoFormulario().equals("cerrado")) {
-                                vn.setText(nameform + "...CERRADO");
-                                vn.setTextColor(Color.CYAN);
-                            } else if (objformulario.getE_festadopercha().equals("ok") && objformulario.getE_fpercha().equals(nameform)) {
-                                vn.setText(nameform + "...FINALIZADO");
-                                vn.setTextColor(Color.GREEN);
-                            } else if (objformulario.getE_festadopop().equals("ok") && objformulario.getE_fpop().equals(nameform)) {
-                                vn.setText(nameform + "...FINALIZADO");
-                                vn.setTextColor(Color.GREEN);
-                            } else if (objformulario.getE_festadopromocion().equals("ok") && objformulario.getE_fpromocion().equals(nameform)) {
-                                vn.setText(nameform + "...FINALIZADO");
-                                vn.setTextColor(Color.GREEN);
-                            } else if (objformulario.getE_festadoactividades().equals("ok") && objformulario.getE_factividades().equals(nameform) && !objformulario.getE_EstadoFormulario().equals("cerrado")) {
-                                vn.setText(nameform + "...FINALIZADO");
-                                vn.setTextColor(Color.GREEN);
-                            } else if (objformulario.getE_festadoactividades().equals("ok") && objformulario.getE_factividades().equals(nameform) && objformulario.getE_EstadoFormulario().equals("cerrado")) {
-                                vn.setText(nameform + "...CERRADO");
-                                vn.setTextColor(Color.CYAN);
-                            } else {
-                                vn.setText(nameform);
-                                vn.setVisibility(View.VISIBLE);
-                            }
-                        } else {
-                            vn.setText(null);
-                            vn.setVisibility(View.GONE);
-                        }
-                    }
-
-                    if (columnName.equals(VersionHidingCursorAdapter.this.versionColumnName)) {
-                        String version = cursor.getString(columnIndex);
-                        TextView v = (TextView) view;
-                        v.setText("");
+                    String version = cursor.getString(columnIndex);
+                    TextView v = (TextView) view;
+                    if (version != null) {
+                        v.setText(String.format(ctxt.getString(R.string.version_number), version));
+                        v.setVisibility(View.VISIBLE);
+                    } else {
+                        v.setText(null);
                         v.setVisibility(View.GONE);
-                        if (version != null) {
-                            v.append(String.format(ctxt.getString(R.string.version_number), version));
-                            v.append(" ");
-                            v.setVisibility(View.VISIBLE);
-                        }
-
-                        if (from.length > 3) {
-                            int idColumnIndex = cursor.getColumnIndex(from[3]);
-                            String id = cursor.getString(idColumnIndex);
-                            if (id != null) {
-                                v.append(String.format(ctxt.getString(R.string.id_number), id));
-                                v.setVisibility(View.VISIBLE);
-                            }
-                        }
                     }
                 }
                 return true;

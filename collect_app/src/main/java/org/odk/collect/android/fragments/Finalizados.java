@@ -104,7 +104,6 @@ public class Finalizados extends Fragment {
                         objBranchSeccion.setE_name("");
 
                         objBranchSeccion.setE_TypeBusiness("");
-                        objBranchSeccion.setE_comment("");
                         objBranchSeccion.setE_Cedula("");
                         objBranchSeccion.setE_Phone("");
 
@@ -118,45 +117,42 @@ public class Finalizados extends Fragment {
 
                         if (objseleccionado.moveToFirst()) {
                             do {
-                                if(objseleccionado.getString(18).toString().equals("cerrado")){
-                                    objBranchSeccion.setE_ID(objseleccionado.getString(0));
-                                    objBranchSeccion.setE_idbranch(objseleccionado.getString(1));
-                                    objBranchSeccion.setE_idAccount(objseleccionado.getString(2));
-                                    objBranchSeccion.setE_externalCode(objseleccionado.getString(3));
-                                    objBranchSeccion.setE_code(objseleccionado.getString(4));
-                                    objBranchSeccion.setE_name(objseleccionado.getString(5));
-                                    objBranchSeccion.setE_neighborhood(objseleccionado.getString(7));
-                                    objBranchSeccion.setE_mainStreet(objseleccionado.getString(6));
-                                    objBranchSeccion.setE_reference(objseleccionado.getString(8));
-                                    objBranchSeccion.setE_propietario(objseleccionado.getString(9));
-                                    objBranchSeccion.setE_uriformulario(objseleccionado.getString(10));
-                                    objBranchSeccion.setE_idprovince(objseleccionado.getString(11));
-                                    objBranchSeccion.setE_iddistrict(objseleccionado.getString(12));
-                                    objBranchSeccion.setE_idParish(objseleccionado.getString(13));
-                                    objBranchSeccion.setE_rutaaggregate(String.valueOf(CodigoRuta));
-                                    objBranchSeccion.setE_imeI_ID(objseleccionado.getString(15));
-                                    objBranchSeccion.setE_TypeBusiness(objseleccionado.getString(21));
-                                    objBranchSeccion.setE_Cedula(objseleccionado.getString(22));
-                                    objBranchSeccion.setE_nuevo("");
-                                    objBranchSeccion.setE_Colabora("");
-                                    objBranchSeccion.setE_Phone(objseleccionado.getString(20));
-                                    objBranchSeccion.setE_comment(objseleccionado.getString(24));
-                                    objBranchSeccion.setE_festadopromocion(objseleccionado.getString(25));
-                                    objBranchSeccion.setE_festadopercha(objseleccionado.getString(26));
-                                    objBranchSeccion.setE_festadopop(objseleccionado.getString(27));
-                                    objBranchSeccion.setE_festadopromocion(objseleccionado.getString(28));
-                                    Toast.makeText(getActivity(),
-                                            "Iniciar Tarea  para: \n" + objseleccionado.getString(5),
-                                            Toast.LENGTH_SHORT).show();
+                                if(objseleccionado.getString(18)!=null && objseleccionado.getString(23)!=null) {
+                                    if (objseleccionado.getString(18).toString().equals("cerrado") && !objseleccionado.getString(23).toString().equals("D")) {
+                                        objBranchSeccion.setE_ID(objseleccionado.getString(0));
+                                        objBranchSeccion.setE_idbranch(objseleccionado.getString(1));
+                                        objBranchSeccion.setE_idAccount(objseleccionado.getString(2));
+                                        objBranchSeccion.setE_externalCode(objseleccionado.getString(3));
+                                        objBranchSeccion.setE_code(objseleccionado.getString(4));
+                                        objBranchSeccion.setE_name(objseleccionado.getString(5));
+                                        objBranchSeccion.setE_neighborhood(objseleccionado.getString(7));
+                                        objBranchSeccion.setE_mainStreet(objseleccionado.getString(6));
+                                        objBranchSeccion.setE_reference(objseleccionado.getString(8));
+                                        objBranchSeccion.setE_propietario(objseleccionado.getString(9));
+                                        objBranchSeccion.setE_uriformulario(objseleccionado.getString(10));
+                                        objBranchSeccion.setE_idprovince(objseleccionado.getString(11));
+                                        objBranchSeccion.setE_iddistrict(objseleccionado.getString(12));
+                                        objBranchSeccion.setE_idParish(objseleccionado.getString(13));
+                                        objBranchSeccion.setE_rutaaggregate(String.valueOf(CodigoRuta));
+                                        objBranchSeccion.setE_imeI_ID(objseleccionado.getString(15));
+                                        objBranchSeccion.setE_TypeBusiness(objseleccionado.getString(21));
+                                        objBranchSeccion.setE_Cedula(objseleccionado.getString(22));
+                                        objBranchSeccion.setE_nuevo("");
+                                        objBranchSeccion.setE_Colabora("");
+                                        objBranchSeccion.setE_Phone(objseleccionado.getString(20));
+
+                                        Toast.makeText(getActivity(),
+                                                "Iniciar Tarea  para: \n" + objseleccionado.getString(5),
+                                                Toast.LENGTH_SHORT).show();
                                 /*Intent i = new Intent(getActivity(), FormChooserList.class);
                                 startActivity(i);*/
-                                    startActivity(new Intent(getActivity().getApplication(), FormChooserList.class)
-                                            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
-                                }else{
-                                    Toast.makeText(getActivity(),
-                                            "Solo se puede crear otro formulario si esta cerrado..!!!", Toast.LENGTH_SHORT).show();
+                                        startActivity(new Intent(getActivity().getApplication(), FormChooserList.class)
+                                                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
+                                    } else {
+                                        Toast.makeText(getActivity(),
+                                                "Solo se puede crear otro formulario si esta cerrado..!!!", Toast.LENGTH_SHORT).show();
+                                    }
                                 }
-
                             } while (objseleccionado.moveToNext());
                         }
 
@@ -198,11 +194,11 @@ public class Finalizados extends Fragment {
             String where = "where 1=1 ";
 
             if (formabusqueda.toString().trim().equals("C")) {
-                where = "where 1=1 and uriformulario <> '' and FMEDICION='ok' and FPERCHA='ok' and FPOP='ok' and FPROMOCION='ok'  ";
+                where = "where 1=1 and (uriformulario <> '' or ESTADOAGGREGATE =='D')   ";
                 where = where + " and  rutaaggregate ='" + ruta + "' ";
             }
             if (formabusqueda.toString().trim().equals("N")) {
-                where = "where 1=1 and uriformulario <> '' and FMEDICION='ok' and FPERCHA='ok' and FPOP='ok' and FPROMOCION='ok' ";
+                where = "where 1=1 and (uriformulario <> '' or ESTADOAGGREGATE =='D') ";
                 where = where + " and rutaaggregate ='" + ruta + "' ";
             }
 
@@ -233,19 +229,31 @@ public class Finalizados extends Fragment {
                     objBranch.setImeI_ID(cursor.getString(15));
                     objBranch.setTypeBusiness(cursor.getString(21));
                     objBranch.setESTADOAGGREGATE(cursor.getString(23));
-                    objBranch.setComment(cursor.getString(24));
                     listOBJ.add(objBranch);
 
 
+                    if(cursor.getString(18)!=null) {
+                        if (cursor.getString(18).toString().equals("nuevo") ) {
+                            category.add(new Category(cursor.getString(1), cursor.getString(4), cursor.getString(5), cursor.getString(20), getResources().getDrawable(R.drawable.azul)));
+                        } else if (cursor.getString(18).toString().equals("cerrado")) {
+                            category.add(new Category(cursor.getString(1), cursor.getString(4), cursor.getString(5), cursor.getString(20), getResources().getDrawable(R.drawable.naranja)));
+                        } else if (cursor.getString(23)!=null) {
+                            if (cursor.getString(23).toString().equals("D")){
+                                category.add(new Category(cursor.getString(1), cursor.getString(4), cursor.getString(5), cursor.getString(20), getResources().getDrawable(R.drawable.morado)));
+                            }else{
+                                category.add(new Category(cursor.getString(1), cursor.getString(4), cursor.getString(5), cursor.getString(20), getResources().getDrawable(R.drawable.verde)));
+                            }
+                        } else {
+                            category.add(new Category(cursor.getString(1), cursor.getString(4), cursor.getString(5), cursor.getString(20), getResources().getDrawable(R.drawable.verde)));
+                        }
 
-                    if(cursor.getString(18).toString().equals("nuevo")) {
-                        category.add(new Category(cursor.getString(1), cursor.getString(4), cursor.getString(5), cursor.getString(20),getResources().getDrawable(R.drawable.azul)));
-                    }else if(cursor.getString(18).toString().equals("cerrado")){
-                        category.add(new Category(cursor.getString(1), cursor.getString(4), cursor.getString(5),cursor.getString(20), getResources().getDrawable(R.drawable.naranja)));
-                    }else  {
-                        category.add(new Category(cursor.getString(1), cursor.getString(4), cursor.getString(5), cursor.getString(20),getResources().getDrawable(R.drawable.verde)));
+                    }else {
+                        if (cursor.getString(23).toString().equals("D")) {
 
+                            category.add(new Category(cursor.getString(1), cursor.getString(4), cursor.getString(5), cursor.getString(20), getResources().getDrawable(R.drawable.morado)));
+                        }
                     }
+
 
                 } while (cursor.moveToNext());
             }
@@ -273,7 +281,7 @@ public class Finalizados extends Fragment {
                     opcion = "c";
                     args = new String[]{CodigoLocal.toUpperCase() + "%"};
                     //*********************************************where solo para censo
-                    where = "where 1=1 and uriformulario <> '' and FMEDICION='ok' and FPERCHA='ok' and FPOP='ok' and FPROMOCION='ok' ";
+                    where = "where 1=1 and (uriformulario <> '' or ESTADOAGGREGATE =='D')  ";
                     where = where + " and  rutaaggregate ='" + ruta + "' ";
                     //*********************************************
                     where = where + "and code = '" + CodigoLocal.toUpperCase() + "'";
@@ -282,7 +290,7 @@ public class Finalizados extends Fragment {
                     opcion = "n";
                     args = new String[]{CodigoLocal.toUpperCase() + "%"};
                     //*********************************************where solo para censo
-                    where = "where 1=1 and uriformulario <> '' and FMEDICION='ok' and FPERCHA='ok' and FPOP='ok' and FPROMOCION='ok' ";
+                    where = "where 1=1 and (uriformulario <> '' or ESTADOAGGREGATE =='D')   ";
                     where = where + " and rutaaggregate ='" + ruta + "' ";
                     //*********************************************
                     where = where + "and name like '%" + CodigoLocal.toUpperCase() + "%'";
@@ -314,7 +322,6 @@ public class Finalizados extends Fragment {
                         objBranch.setRutaaggregate(cursor.getString(14));
                         objBranch.setImeI_ID(cursor.getString(15));
                         objBranch.setTypeBusiness(cursor.getString(21));
-                        objBranch.setComment(cursor.getString(24));
                         listOBJ.add(objBranch);
                         category.add(new Category(cursor.getString(1),cursor.getString(4),cursor.getString(5),cursor.getString(20),getResources().getDrawable(R.drawable.ok)));
 

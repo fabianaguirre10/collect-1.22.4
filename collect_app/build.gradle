@@ -211,9 +211,10 @@ dependencies {
     implementation "com.google.android.gms:play-services-maps:15.0.1"
     implementation "com.google.android.gms:play-services-location:15.0.1"
 
+
     implementation "com.google.firebase:firebase-core:16.0.1"
     implementation "com.crashlytics.sdk.android:crashlytics:2.9.2"
-
+    implementation 'com.jsibbold:zoomage:1.2.0'
     implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:7.3.0'
     implementation 'com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v7:0.6.0'
 
@@ -276,7 +277,8 @@ dependencies {
     testImplementation "com.squareup.leakcanary:leakcanary-android-no-op:${rootProject.leakyCanaryVersion}"
     androidTestImplementation "com.squareup.leakcanary:leakcanary-android-no-op:${rootProject.leakyCanaryVersion}"
     odkCollectReleaseImplementation "com.squareup.leakcanary:leakcanary-android-no-op:${rootProject.leakyCanaryVersion}"
-
+    //noinspection DuplicatePlatformClasses
+    implementation 'org.apache.httpcomponents:httpclient:4.5'
     // Android Architecture Components:
     implementation "androidx.lifecycle:lifecycle-extensions:2.1.0-alpha04"
 

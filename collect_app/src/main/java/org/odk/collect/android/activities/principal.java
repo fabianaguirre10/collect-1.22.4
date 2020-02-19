@@ -45,6 +45,8 @@ import org.odk.collect.android.database.BaseDatosEngine.Entidades.BranchSession;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.CodigoSession;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.ConfiguracionSession;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.CuentaSession;
+import org.odk.collect.android.database.BaseDatosEngine.Entidades.EstadoEditar;
+import org.odk.collect.android.database.BaseDatosEngine.Entidades.EstadoFormularioSession;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.FiltrosBusqueda;
 import org.odk.collect.android.database.BaseDatosEngine.EstructuraBD;
 import org.odk.collect.android.logic.Category;
@@ -71,7 +73,7 @@ public class principal extends AppCompatActivity {
     Engine_util objutil;
     TextView txtnombrecampania;
     Spinner cmbnumeroruta;
-
+    EstadoFormularioSession objseccion= new EstadoFormularioSession();
     EditText txtbuscar;
     private SharedPreferences adminPreferences;
     ProgressDialog progress;
@@ -79,18 +81,21 @@ public class principal extends AppCompatActivity {
     ArrayList<Category> category = new ArrayList<Category>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_principal);
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         txtnombrecampania = (TextView) findViewById(R.id.txnombrecampania);
+        objseccion.setE_imei(obterImeid());
         cmbnumeroruta = (Spinner) findViewById(R.id.cmbnumeroruta);
         txtbuscar = (EditText) findViewById(R.id.txtcodbusqueda);
+        EstadoEditar ed= new EstadoEditar();
+        ed.setEstadoEdit("1");
+        objutil= new Engine_util();
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         adminPreferences = this.getSharedPreferences(
                 AdminPreferencesActivity.ADMIN_PREFERENCES, 0);
-        objutil= new Engine_util();
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setVisibility(View.INVISIBLE);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -113,7 +118,15 @@ public class principal extends AppCompatActivity {
                                 objBranchSeccion.setE_name("");
                                 objBranchSeccion.setE_reference("");
                                 objBranchSeccion.setE_Phone("");
-                                objBranchSeccion.setE_comment("");
+                                BaseDatosEngine usdbh = new BaseDatosEngine();
+                                if(objBranchSeccion.getE_code().equals("")==false){
+                                    usdbh = usdbh.open();
+                                    ContentValues Objdatosnuevos = new ContentValues();
+                                    Objdatosnuevos.put(EstructuraBD.CabecerasCodigos.codeunico, objBranchSeccion.getE_code());
+                                    Objdatosnuevos.put(EstructuraBD.CabecerasCodigos.uri, "ocupado");
+                                    String where = "codeunico='" + objBranchSeccion.getE_code() + "'";
+                                    usdbh.ActualizarTablaCodigos(Objdatosnuevos, where);
+                                }
 
 
                                 Intent intent = new Intent(getApplication(), FormChooserList.class);
@@ -137,7 +150,35 @@ public class principal extends AppCompatActivity {
                             }
                         }
                     });
+                   /* builder.setNegativeButton("Digitar Código", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            objBranchSeccion.setE_ID("");
+                            objBranchSeccion.setE_idbranch("");
+                            objBranchSeccion.setE_idAccount("");
+                            objBranchSeccion.setE_externalCode("");
+                            objBranchSeccion.setE_code("");
+                            objBranchSeccion.setE_neighborhood("");
+                            objBranchSeccion.setE_mainStreet("");
+                            objBranchSeccion.setE_reference("");
+                            objBranchSeccion.setE_propietario("");
+                            objBranchSeccion.setE_uriformulario("");
+                            objBranchSeccion.setE_idprovince("");
+                            objBranchSeccion.setE_iddistrict("");
+                            objBranchSeccion.setE_idParish("");
+                            objBranchSeccion.setE_rutaaggregate("0");
+                            objBranchSeccion.setE_imeI_ID("");
+                            objBranchSeccion.setE_nuevo("nuevo");
 
+                            objcodigoSession.setcId("");
+                            objcodigoSession.setC_idAccount("");
+                            objcodigoSession.setC_code("");
+                            objcodigoSession.setC_estado("");
+                            objcodigoSession.setC_uri("");
+                            objcodigoSession.setC_imei_id("");
+                            Intent intent = new Intent(getApplication(), FormChooserList.class);
+                            startActivityForResult(intent, 0);
+                        }
+                    });*/
                     builder.setIcon(android.R.drawable.ic_dialog_alert);
                     builder.show();
 
@@ -150,6 +191,7 @@ public class principal extends AppCompatActivity {
                 }
             }
         });
+
         Button btnbuscartareacodigo = (Button) findViewById(R.id.btnbuscartareacodigo);
         Button btninforme = (Button) findViewById(R.id.btninforme);
         if (objconfiguracionSession.getCnf_CampaniaNombre() == null) {
@@ -170,6 +212,7 @@ public class principal extends AppCompatActivity {
             txtnombrecampania.setText(objconfiguracionSession.getCnf_CampaniaNombre().toString());
             ListarRutasEngine();
         }
+
         cmbnumeroruta.setOnItemSelectedListener(
                 new AdapterView.OnItemSelectedListener() {
                     public void onItemSelected(AdapterView<?> parent,
@@ -203,6 +246,7 @@ public class principal extends AppCompatActivity {
             }
 
         });
+
         btnbuscartareacodigo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -229,7 +273,11 @@ public class principal extends AppCompatActivity {
             }
 
         });
+
+
     }
+
+
 
     public void ListarRutasEngine() {
         category=new ArrayList<>();
@@ -248,12 +296,14 @@ public class principal extends AppCompatActivity {
         }
         ArrayAdapter<String> adaptador;
         adaptador = new ArrayAdapter<String>(getApplication(), R.layout.spinner_personalizado, listar);
+
         cmbnumeroruta.setAdapter(adaptador);
         if(objBranchSeccion!=null) {
             int pos=adaptador.getPosition(objBranchSeccion.getE_rutaaggregate());
             if(pos>-1)
                 cmbnumeroruta.setSelection(pos);
         }
+
     }
 
 
@@ -314,7 +364,6 @@ public class principal extends AppCompatActivity {
                     objBranchSeccion.setE_name("");
                     objBranchSeccion.setE_reference("");
                     objBranchSeccion.setE_Cedula("");
-                    objBranchSeccion.setE_comment("");
                     Cursor cursor1 = usdbh.CodigoNuevo(cursor.getString(0));
                     if (cursor1.moveToFirst()) {
                         do {
@@ -385,7 +434,7 @@ public class principal extends AppCompatActivity {
                 // Construct the URL somehow
                 String Idaccount =objcuentaSession.getCu_idAccount();
                 String Idcampania="";
-                String url1 = "http://geomardis6728.cloudapp.net/msdyvenproodk/api/codigos?idAccounut="+Idaccount+"&imail="+obterImeid();
+                String url1 = "http://geomardis6728.cloudapp.net/msbancoGuayaquil/api/codigos?idAccounut="+Idaccount+"&imail="+obterImeid();
                 URL url = new URL(url1);
 
                 // Create the request to MuslimSalat.com, and open the connection
@@ -540,7 +589,7 @@ public class principal extends AppCompatActivity {
     protected void onStart() {
         txtbuscar.setText("");
         if (txtbuscar.getText().toString().equals("") == false) {
-
+            //buscarlocalesrutaCodigo(cmbnumeroruta.getSelectedItem().toString(), objconfiguracionSession.getCnf_factorbusqueda().toString().toUpperCase());
             objFiltrosBusqueda.setF_codigo(txtbuscar.getText().toString());
             objFiltrosBusqueda.setF_Ruta(cmbnumeroruta.getSelectedItem().toString());
             ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
@@ -551,7 +600,7 @@ public class principal extends AppCompatActivity {
         }else{
             objFiltrosBusqueda.setF_codigo("");
             objFiltrosBusqueda.setF_Ruta(cmbnumeroruta.getSelectedItem().toString());
-
+            // buscarlocalesruta(cmbnumeroruta.getSelectedItem().toString(), objconfiguracionSession.getCnf_factorbusqueda().toString().toUpperCase());
             ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
             SimpleFragmentPagerAdapter adapter = new SimpleFragmentPagerAdapter(getApplication().getApplicationContext(),getSupportFragmentManager(),cmbnumeroruta.getSelectedItem().toString(),"");
             viewPager.setAdapter(adapter);
@@ -559,12 +608,12 @@ public class principal extends AppCompatActivity {
             tabLayout.setupWithViewPager(viewPager);
         }
         super.onStart();
-
+        //Collect.getInstance().getActivityLogger().logOnStart(this);
     }
 
     @Override
     protected void onStop() {
-
+        //Collect.getInstance().getActivityLogger().logOnStop(this);
         super.onStop();
     }
     @Override
@@ -581,12 +630,6 @@ public class principal extends AppCompatActivity {
             case R.id.menu_cuentaconf:
 
                 startActivity(new Intent(getBaseContext(), configuracion.class)
-                        .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
-                finish();
-                return true;
-            case R.id.menu_cuenta:
-
-                startActivity(new Intent(getBaseContext(), principal.class)
                         .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
                 finish();
                 return true;
@@ -607,12 +650,15 @@ public class principal extends AppCompatActivity {
                 startActivity(ig);
                 return true;
             case R.id.menu_admin_preferences:
-                String pw = adminPreferences.getString(
-                        AdminKeys.KEY_ADMIN_PW, "");
+
+                String pw = adminPreferences.getString(AdminKeys.KEY_ADMIN_PW, "");
                 if ("".equalsIgnoreCase(pw)) {
-                    startActivity(new Intent(this, AdminPreferencesActivity.class));
+                    Intent i = new Intent(getApplicationContext(),
+                            AdminPreferencesActivity.class);
+                    startActivity(i);
                 } else {
                     showDialog(PASSWORD_DIALOG);
+
                 }
                 return true;
         }

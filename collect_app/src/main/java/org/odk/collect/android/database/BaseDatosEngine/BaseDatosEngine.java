@@ -12,6 +12,7 @@ import org.odk.collect.android.database.BaseDatosEngine.EstructuraBD.ColumnasCam
 import org.odk.collect.android.database.BaseDatosEngine.EstructuraBD.ColumnasCodigos;
 import org.odk.collect.android.database.BaseDatosEngine.EstructuraBD.ColumnasDistrict;
 import org.odk.collect.android.database.BaseDatosEngine.EstructuraBD.ColumnasEngine;
+import org.odk.collect.android.database.BaseDatosEngine.EstructuraBD.ColumnasEstadoFormulario;
 import org.odk.collect.android.database.BaseDatosEngine.EstructuraBD.ColumnasProvince;
 import org.odk.collect.android.database.BaseDatosEngine.EstructuraBD.Columnasparish;
 import org.odk.collect.android.database.DatabaseContext;
@@ -27,7 +28,7 @@ import timber.log.Timber;
 public class BaseDatosEngine {
     private static final String NOMBRE_BASE_DATOS = "EngineDatos.db";
 
-    private static final int VERSION_ACTUAL = 41;
+    private static final int VERSION_ACTUAL = 20;
     private DatabaseHelperEngine dbHelper;
     private SQLiteDatabase db;
     interface Tablas {
@@ -39,6 +40,7 @@ public class BaseDatosEngine {
         String Parish = "Parish";
         String Service = "Service";
         String Configuracion = "Configuracion";
+        String EstadoFormulario = "EstadoFormulario";
     }
 
     private static class DatabaseHelperEngine extends SQLiteOpenHelper {
@@ -48,8 +50,7 @@ public class BaseDatosEngine {
         @Override
         public void onCreate(SQLiteDatabase db) {
             // create table to keep track of the itemsets
-                String query = "create table LocalesEngine(" +
-                        "_ID integer primary key," +
+                String query = "create table LocalesEngine(_ID integer primary key," +
                         ColumnasEngine.idbranch + " text," +
                         ColumnasEngine.idAccount + " text," +
                         ColumnasEngine.externalCode + " text," +
@@ -73,13 +74,7 @@ public class BaseDatosEngine {
                         ColumnasEngine.TypeBusiness + " text," +
                         ColumnasEngine.Cedula + " text," +
                         ColumnasEngine.ESTADOAGGREGATE + " text," +
-                        ColumnasEngine.comment + " text," +
-                        ColumnasEngine.formulariomedicion + " text," +
-                        ColumnasEngine.formulariopercha + " text," +
-                        ColumnasEngine.formulariopop + " text," +
-                        ColumnasEngine.formulariopromocion + " text," +
-                        ColumnasEngine.actividades + " text," +
-                        ColumnasEngine.formularioactividades + " text" +
+                        ColumnasEngine.Foto_Exterior + " text" +
                         ")";
 
                 db.execSQL(query);
@@ -108,6 +103,30 @@ public class BaseDatosEngine {
                         ColumnasProvince.Name + " text" +
                         ")";
                 db.execSQL(query);
+            query = "create table " + Tablas.EstadoFormulario + "(_ID integer primary key," +
+                    ColumnasEstadoFormulario.idAccount + " text," +
+                    ColumnasEstadoFormulario.IdCampania + " text," +
+                    ColumnasEstadoFormulario.code + " text," +
+                    ColumnasEstadoFormulario.ruta + " text," +
+                    ColumnasEstadoFormulario.estadovisita + " text," +
+                    ColumnasEstadoFormulario.estadointeres + " text," +
+                    ColumnasEstadoFormulario.nombrelocal + " text," +
+                    ColumnasEstadoFormulario.direccion + " text," +
+                    ColumnasEstadoFormulario.referencia + " text," +
+                    ColumnasEstadoFormulario.barrio + " text," +
+                    ColumnasEstadoFormulario.latitud + " text," +
+                    ColumnasEstadoFormulario.longitud + " text," +
+                    ColumnasEstadoFormulario.nombrepro + " text," +
+                    ColumnasEstadoFormulario.apellidopropi + " text," +
+                    ColumnasEstadoFormulario.telefono + " text," +
+                    ColumnasEstadoFormulario.celular + " text," +
+                    ColumnasEstadoFormulario.fecha + " text," +
+                    ColumnasEstadoFormulario.estadoenvio + " text," +
+                    ColumnasEstadoFormulario.uri + " text," +
+                    ColumnasEstadoFormulario.imei + " text," +
+                    ColumnasEstadoFormulario.cedula + " text" +
+                    ")";
+            db.execSQL(query);
                 query = "create table " + Tablas.District + "(_ID integer primary key," +
                         ColumnasDistrict.IdDistrict + " text," +
                         ColumnasDistrict.IdProvince + " text," +
@@ -150,7 +169,7 @@ public class BaseDatosEngine {
             db.execSQL("DROP TABLE IF EXISTS " + Tablas.Parish);
             db.execSQL("DROP TABLE IF EXISTS " + Tablas.Service);
             db.execSQL("DROP TABLE IF EXISTS " + Tablas.Configuracion);
-            if(newVersion==41){
+            if(newVersion==20){
                 onCreate(db);
             }
         }
@@ -668,48 +687,26 @@ public Cursor ResumenDatos(String consulta) {
             }
         }
 
+    public boolean ActualizarTablaestado(ContentValues values, String sentencia) {
+
+        int idUsuario;
+        try {
+            idUsuario = (int) db.update(Tablas.EstadoFormulario, values, sentencia, null);
+            //CerrarBase(db);
+            //listar();
+            return true;
+        } catch (Exception ex) {
+            CerrarBase(db);
+            return false;
+        }
+    }
 
         //metodos para insertar modificar listar datos
         public boolean insertardatos(ContentValues values) {
 
             int idUsuario;
             try {
-                //idUsuario = (int) db.insert(Tablas.LocalesEngine, null, values);
-
-                String query = "insert into " + Tablas.LocalesEngine + " values (" +
-                        values.getAsString("ID") +
-                        ",'" + values.getAsString(ColumnasEngine.idbranch) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.idAccount) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.externalCode) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.code) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.name) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.mainStreet) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.neighborhood) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.reference) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.propietario) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.uriformulario) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.idprovince) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.iddistrict) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.idParish) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.rutaaggregate) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.imeI_ID) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.LatitudeBranch) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.LenghtBranch) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.EstadoFormulario) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.Colabora) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.Celular) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.TypeBusiness) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.Cedula) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.ESTADOAGGREGATE) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.comment) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.formulariomedicion) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.formulariopercha) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.formulariopop) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.formulariopromocion) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.actividades) + "',"
-                        + "'" + values.getAsString(ColumnasEngine.formularioactividades) + "')";
-                db.execSQL(query);
-
+                idUsuario = (int) db.insert(Tablas.LocalesEngine, null, values);
                 //CerrarBase(db);
                 //listar();
                 return true;
@@ -720,6 +717,22 @@ public Cursor ResumenDatos(String consulta) {
 
 
         }
+
+    public boolean insertardatosFormulario(ContentValues values) {
+
+        int idUsuario;
+        try {
+            idUsuario = (int) db.insert(Tablas.EstadoFormulario, null, values);
+            //CerrarBase(db);
+            //listar();
+            return true;
+        } catch (Exception ex) {
+            CerrarBase(db);
+            return false;
+        }
+
+
+    }
 
         public boolean ActualizarTabla(ContentValues values, String sentencia) {
 

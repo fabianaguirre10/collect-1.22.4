@@ -57,13 +57,10 @@ public class configuracion extends AppCompatActivity {
     final CuentaSession objcuentaSession= new CuentaSession();
     final ConfiguracionSession objconfiguracionSession= new ConfiguracionSession();
     String Estado="";
-    //fuente dyvenpro actualizado subir repositoriodd...
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configuracion);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
         cmbcuentacamp=(Spinner) findViewById(R.id.cmbcampaniaCL);
         Button btnCargarCodigosCL=(Button)findViewById(R.id.btncargarlocalesCL);
         Button btncargarlocalcuenta=(Button)findViewById(R.id.btncargarlocalcuenta);
@@ -184,7 +181,6 @@ public class configuracion extends AppCompatActivity {
             }
 
         });
-
     }
 
     public void CargarListacuenta(){
@@ -238,24 +234,6 @@ public class configuracion extends AppCompatActivity {
         }
         return myIMEI;
     }
-    private static String agregarCeros(@NotNull String string, int largo)
-    {
-        String ceros = "";
-
-        int cantidad = largo - string.length();
-
-        if (cantidad >= 1)
-        {
-            for(int i=0;i<cantidad;i++)
-            {
-                ceros += "0";
-            }
-
-            return (ceros + string);
-        }
-        else
-            return string;
-    }
     //clase para cargar campania
     public class CargarCampaniasCuentas extends AsyncTask<Void,Void,String> {
         public CargarCampaniasCuentas(Context context) {
@@ -288,13 +266,15 @@ public class configuracion extends AppCompatActivity {
 
             try {
                 // Construct the URL somehow
-                String url1 = "http://geomardis6728.cloudapp.net/msdyvenproodk/api/Canpania";
+                String url1 = "http://geomardis6728.cloudapp.net/msbancoGuayaquil/api/Canpania";
                 URL url = new URL(url1);
 
                 // Create the request to MuslimSalat.com, and open the connection
 
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
+                ///pasas paretros
+
                 urlConnection.connect();
 
                 // Read the input stream into a String
@@ -447,7 +427,7 @@ public class configuracion extends AppCompatActivity {
                 // Construct the URL somehow
                 String Idaccount =objcuentaSession.getCu_idAccount();
                 String Idcampania="";
-                String url1 = "http://geomardis6728.cloudapp.net/msdyvenproodk/api/Task?idAccount="+Idaccount+"&Imeid="+obterImeid();
+                String url1 = "http://geomardis6728.cloudapp.net/msBGE/api/Task?idAccount="+Idaccount+"&Imeid="+obterImeid();
                 URL url = new URL(url1);
 
                 // Create the request to MuslimSalat.com, and open the connection
@@ -538,22 +518,11 @@ public class configuracion extends AppCompatActivity {
                             String celular = obj.getString("celular");
                             String TypeBusiness  = obj.getString("typeBusiness");
                             String cedula=obj.getString("cedula");
-                            String actividad=obj.getString("actividad").replace("[","").replace("]","");
-                            String[] actividades = actividad.split(",");
-                            String actividadesformularios="";
-
-                            for (String a:actividades)
-                            {
-
-                                    actividadesformularios = actividadesformularios + "X" + agregarCeros(a,3) + "-";
-
-                            }
-
-                            String comment=obj.getString("comment");
                             //storeaudit
-                            //String ESTADOAGGREGATE=obj.getString("estadoaggregate");
+                            String ESTADOAGGREGATE=obj.getString("estadoaggregate");
+                            String Link=obj.getString("link");
                             //censo
-                            String ESTADOAGGREGATE="S";
+                            //String ESTADOAGGREGATE="S";
                             BaseDatosEngine usdbh = new BaseDatosEngine();
 
                             if(jumpTime==0){
@@ -599,14 +568,7 @@ public class configuracion extends AppCompatActivity {
                                 Objdatos.put(EstructuraBD.CabecerasEngine.TypeBusiness, TypeBusiness);
                                 Objdatos.put(EstructuraBD.CabecerasEngine.Cedula, cedula);
                                 Objdatos.put(EstructuraBD.CabecerasEngine.ESTADOAGGREGATE,ESTADOAGGREGATE);
-                                Objdatos.put(EstructuraBD.CabecerasEngine.comment,comment);
-                                Objdatos.put(EstructuraBD.CabecerasEngine.formulariomedicion,"I");
-                                Objdatos.put(EstructuraBD.CabecerasEngine.formulariopercha,"I");
-                                Objdatos.put(EstructuraBD.CabecerasEngine.formulariopop,"I");
-                                Objdatos.put(EstructuraBD.CabecerasEngine.formulariopromocion,"I");
-                                Objdatos.put(EstructuraBD.CabecerasEngine.actividades,actividadesformularios);
-                                Objdatos.put(EstructuraBD.CabecerasEngine.formularioactividades,"I");
-
+                                Objdatos.put(EstructuraBD.CabecerasEngine.Foto_Exterior,Link);
                                 usdbh.insertardatos(Objdatos);
                                 usdbh.close();
                             } catch (Exception e) {
@@ -642,6 +604,5 @@ public class configuracion extends AppCompatActivity {
         }
     }
 }
-
 
 

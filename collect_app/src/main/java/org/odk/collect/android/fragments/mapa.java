@@ -1,8 +1,10 @@
 package org.odk.collect.android.fragments;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -25,6 +27,7 @@ import org.odk.collect.android.activities.FormChooserList;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.BranchSession;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.CodigoSession;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.FiltrosBusqueda;
+import  org.odk.collect.android.activities.informacionpuntoapp;
 
 /**
  * Created by Administrador1 on 14/3/2018.
@@ -47,10 +50,12 @@ public class mapa extends SupportMapFragment implements GoogleMap.OnMarkerClickL
         return rootView;
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onMapReady(GoogleMap map) {
         // Posicionar el mapa en una localización y con un nivel de zoom
         mMap = map;
+        mMap.clear();
         // Un zoom mayor que 13 hace que el emulador falle, pero un valor deseado para
         // callejero es 17 aprox.
         String opcion = "";
@@ -73,23 +78,23 @@ public class mapa extends SupportMapFragment implements GoogleMap.OnMarkerClickL
                     float zoom = 13;
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
                     MarkerOptions Opc = new MarkerOptions();
-                        Opc.position(latLng);
-                        Opc.title(cursor.getString(4));
-
-
-
-
-                    if(cursor.getString(25).equals("ok")&& cursor.getString(26).equals("ok")&& cursor.getString(27).equals("ok")&& cursor.getString(28).equals("ok") )
-                    {
-                        Opc.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                    }else if(cursor.getString(25).equals("ok")||cursor.getString(26).equals("ok")||cursor.getString(27).equals("ok")||cursor.getString(28).equals("ok") )
-                    {
-                        Opc.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
-                    }else {
+                    Opc.position(latLng);
+                    Opc.title(cursor.getString(4));
+                    if(cursor.getString(23).toString().equals("S"))
                         Opc.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-                    }
+                    if(cursor.getString(23).toString().equals("E"))
+                        Opc.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                    if(cursor.getString(23).toString().equals("N"))
+                        Opc.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                    if(cursor.getString(23).toString().equals("C"))
+                        Opc.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                    /*if(cursor.getString(23).toString().equals("D"))
+                        Opc.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET));*/
+                    if(cursor.getString(23).toString().equals("B"))
+                        Opc.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
 
-
+                    if(cursor.getString(10).toString().equals("")==false )
+                        Opc.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
 
 
                     mMap.addMarker(Opc);
@@ -139,6 +144,11 @@ public class mapa extends SupportMapFragment implements GoogleMap.OnMarkerClickL
                 objcodigoSession.setC_estado("");
                 objcodigoSession.setC_uri("");
                 objcodigoSession.setC_imei_id("");
+                objBranchSeccion.setE_name("");
+                objBranchSeccion.setE_TypeBusiness("");
+                objBranchSeccion.setE_Phone("");
+                objBranchSeccion.setE_Cedula("");
+
 
 
 
@@ -161,12 +171,17 @@ public class mapa extends SupportMapFragment implements GoogleMap.OnMarkerClickL
                         objBranchSeccion.setE_rutaaggregate(String.valueOf(objFiltrosBusqueda.getF_Ruta()));
                         objBranchSeccion.setE_imeI_ID(objseleccionado.getString(15));
                         objBranchSeccion.setE_TypeBusiness(objseleccionado.getString(21));
-                        objBranchSeccion.setE_comment(objseleccionado.getString(24));
                         objBranchSeccion.setE_nuevo("");
-                        objBranchSeccion.setE_festadopromocion(objseleccionado.getString(25));
-                        objBranchSeccion.setE_festadopercha(objseleccionado.getString(26));
-                        objBranchSeccion.setE_festadopop(objseleccionado.getString(27));
-                        objBranchSeccion.setE_festadopromocion(objseleccionado.getString(28));
+
+                        objBranchSeccion.setE_nuevo("");
+                        objBranchSeccion.setE_Colabora("");
+                        objBranchSeccion.setE_TypeBusiness(objseleccionado.getString(21));
+                        objBranchSeccion.setE_Cedula(objseleccionado.getString(22));
+                        objBranchSeccion.setE_Phone(objseleccionado.getString(20));
+                        objBranchSeccion.setE_LatitudeBranch(objseleccionado.getString(16).toString());
+                        objBranchSeccion.setE_LenghtBranch(objseleccionado.getString(17).toString());
+                        objBranchSeccion.setE_fotoexterior(objseleccionado.getString(24).toString());
+
 
                         final android.app.AlertDialog.Builder builder;
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -176,15 +191,19 @@ public class mapa extends SupportMapFragment implements GoogleMap.OnMarkerClickL
                         }
                         builder.setTitle("Iniciar Tarea");
                         builder.setMessage(objseleccionado.getString(5));
-                        builder.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        startActivity(new Intent(getActivity().getApplication(), FormChooserList.class)
-                                                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
-                                    }
-                        });
-                        builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                        builder.setPositiveButton("Formulario", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
-                                onMapReady(map);
+                                startActivity(new Intent(getActivity().getApplication(), FormChooserList.class)
+                                        .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
+                            }
+                        });
+                        builder.setNegativeButton("Información", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                //onMapReady(map);
+
+                                startActivity(new Intent(getActivity().getApplication(), informacionpuntoapp.class)
+                                        .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
+
                             }
                         }).setIcon(android.R.drawable.ic_dialog_alert);
                         builder.show();
@@ -236,7 +255,7 @@ public class mapa extends SupportMapFragment implements GoogleMap.OnMarkerClickL
         }
 
         // Return false to indicate that we have not consumed the event and that we wish
-        // for the default behavior to occur (which is for the camera to move such that the
+        // for the default behavior to occteur (which is for the camera to move such that the
         // marker is centered and for the marker's info window to open, if it has one).
         return false;
     }
