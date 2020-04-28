@@ -16,6 +16,7 @@ import org.odk.collect.android.database.BaseDatosEngine.Entidades.EstadosFormula
 import org.odk.collect.android.fragments.Activos;
 import org.odk.collect.android.fragments.EstadosFinalizados;
 import org.odk.collect.android.fragments.EstadosFormularios;
+import org.odk.collect.android.fragments.Finalizados;
 import org.odk.collect.android.fragments.mapa;
 
 public class SimpleFragmentPagerAdapter extends FragmentPagerAdapter {
@@ -45,13 +46,19 @@ public class SimpleFragmentPagerAdapter extends FragmentPagerAdapter {
         Cursor cursorFinalizados = objutil.ContarEstado(where);
 
 
-        Cursor cursorin;
+       /* Cursor cursorin;
         cursorin = new InstancesDao().getUnsentInstancesCursorSave("","");
         finalizadosE=cursorin.getCount();
 
         Cursor cursorfin;
         cursorfin = new InstancesDao().getUnsentInstancesCursorfnish("","");
-        estadoFinalizado=cursorfin.getCount();
+        estadoFinalizado=cursorfin.getCount();*/
+        if (cursorFinalizados.moveToFirst()) {
+
+            do {
+                finalizadosE=cursorFinalizados.getInt(0);
+            } while (cursorFinalizados.moveToNext());
+        }
 
         if (cursorActivos.moveToFirst()) {
 
@@ -67,29 +74,28 @@ public class SimpleFragmentPagerAdapter extends FragmentPagerAdapter {
     @Override
     public Fragment getItem(int position) {
         if (position == 0) {
+            /*Fragment activo =new Activos();
+            activo.setArguments(args);
+            return activo;*/
+            Fragment mapa =new mapa();
+            return mapa;
+        } else if (position==1){
             Fragment activo =new Activos();
             activo.setArguments(args);
             return activo;
-        } else if (position==1){
-            EstadosFormularios finalizados =new EstadosFormularios();
-            finalizados.setArguments(args);
-            return finalizados;
-        } else if (position==2  ){
-            EstadosFinalizados finalizados =new EstadosFinalizados();
+
+        } else {
+            Finalizados finalizados =new Finalizados();
             finalizados.setArguments(args);
             return finalizados;
         }
-        else
-        {
-            Fragment mapa =new mapa();
-            return mapa;
-        }
+
     }
 
     // This determines the number of tabs
     @Override
     public int getCount() {
-        return 4;
+        return 3;
     }
 
     // This determines the title for each tab
@@ -98,13 +104,12 @@ public class SimpleFragmentPagerAdapter extends FragmentPagerAdapter {
         // Generate title based on item position
         switch (position) {
             case 0:
-                return "Pendientes("+ activosE+")";
+                return "Ubicación ("+ activosE +")";
             case 1:
-                return "Incompletos("+ finalizadosE+")";
+                return "Pendientes("+ activosE+")";
             case 2:
-                return "Enviados("+ estadoFinalizado+")";
-            case 3:
-                return "Ubicación("+ mapaC+")";
+                return "Finalizados("+ finalizadosE+")";
+
 
             default:
                 return null;

@@ -83,15 +83,18 @@ import org.odk.collect.android.dao.helpers.ContentResolverHelper;
 import org.odk.collect.android.dao.helpers.FormsDaoHelper;
 import org.odk.collect.android.dao.helpers.InstancesDaoHelper;
 import org.odk.collect.android.database.BaseDatosEngine.BaseDatosEngine;
+import org.odk.collect.android.database.BaseDatosEngine.Entidades.BranchProducto;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.BranchSession;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.CodigoSession;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.EstadoFormularioSession;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.EstadosFormulario;
+import org.odk.collect.android.database.BaseDatosEngine.Entidades.Producto;
 import org.odk.collect.android.database.BaseDatosEngine.EstructuraBD;
 import org.odk.collect.android.events.ReadPhoneStatePermissionRxEvent;
 import org.odk.collect.android.events.RxEventBus;
 import org.odk.collect.android.exception.JavaRosaException;
 import org.odk.collect.android.external.ExternalDataManager;
+import org.odk.collect.android.fragments.Activos;
 import org.odk.collect.android.fragments.MediaLoadingFragment;
 import org.odk.collect.android.fragments.dialogs.CustomDatePickerDialog;
 import org.odk.collect.android.fragments.dialogs.FormLoadingDialogFragment;
@@ -99,6 +102,7 @@ import org.odk.collect.android.fragments.dialogs.LocationProvidersDisabledDialog
 import org.odk.collect.android.fragments.dialogs.NumberPickerDialog;
 import org.odk.collect.android.fragments.dialogs.ProgressDialogFragment;
 import org.odk.collect.android.fragments.dialogs.RankingWidgetDialog;
+import org.odk.collect.android.fragments.mapa;
 import org.odk.collect.android.listeners.AdvanceToNextListener;
 import org.odk.collect.android.listeners.FormLoaderListener;
 import org.odk.collect.android.listeners.FormSavedListener;
@@ -146,6 +150,7 @@ import org.odk.collect.android.widgets.QuestionWidget;
 import org.odk.collect.android.widgets.RangeWidget;
 import org.odk.collect.android.widgets.StringWidget;
 
+import java.io.Console;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -2869,6 +2874,43 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
                 gurdarenviarformulariopartes(uri,"Completo");
                 finishReturnInstance();
                 cambiarestado(codigobranch,uri);
+                Activos activos= new Activos();
+                mapa mapal= new mapa();
+
+                if(activos.getListapro().size()==0){
+                    activos.setListapro(mapal.getListapro());
+                }
+                for (BranchProducto bp: activos.getListapro()
+                     ) {
+                    if(bp.getE_valor()!="0" && bp.getE_valor()!="e_valor") {
+                        ToastUtils.showLongToast(bp.getE_valor());
+                        usdbh = usdbh.open();
+                        ContentValues Objdatos = new ContentValues();
+                        Double s = 0.0, c = 0.0;
+                        s = Double.valueOf(bp.getE_stock());
+                        c = Double.valueOf(bp.getE_valor());
+                        Objdatos.put(EstructuraBD.CabeceraProductos.stock, s - c);
+                        String where2 = "_id='" + bp.get_id()
+                                + "'";
+                        usdbh.ActualizarTablaStock(Objdatos, where2);
+                        usdbh.close();
+                        SimpleDateFormat dateFormat = new SimpleDateFormat(
+                                "yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                        Date date = new Date();
+
+                        ContentValues Objdatosop = new ContentValues();
+                        Objdatosop.put(EstructuraBD.CabeceraOperaciones.cantidad, bp.getE_valor());
+                        Objdatosop.put(EstructuraBD.CabeceraOperaciones.codproducto, bp.getE_codproducto());
+                        Objdatosop.put(EstructuraBD.CabeceraOperaciones.tipooperacion, "S");
+                        Objdatosop.put(EstructuraBD.CabeceraOperaciones.fecha, dateFormat.format(date));
+                        Objdatosop.put(EstructuraBD.CabeceraOperaciones.codlocal, bp.e_code);
+                        Objdatosop.put(EstructuraBD.CabeceraOperaciones.stock, s - c);
+                        Objdatosop.put(EstructuraBD.CabeceraOperaciones.estado, "F");
+                        usdbh = usdbh.open();
+                        usdbh.insertardatosproductosOperaciones(Objdatosop);
+                        usdbh.close();
+                    }
+                }
                 break;
             case SaveToDiskTask.SAVE_ERROR:
                 String message;

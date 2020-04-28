@@ -78,6 +78,28 @@ public class Engine_util {
             return null;
         }
     }
+    public  Cursor Listarproductos( String[] args,String opcion,String where){
+        try {
+            BaseDatosEngine usdbh = new BaseDatosEngine();
+            usdbh = usdbh.open();
+            Cursor cursor = usdbh.listarProducto(args, opcion, where);
+            usdbh.close();
+            return cursor;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+    public  Cursor Listarproductoscombo( String[] args,String opcion,String where){
+        try {
+            BaseDatosEngine usdbh = new BaseDatosEngine();
+            usdbh = usdbh.open();
+            Cursor cursor = usdbh.listarProductocod(args, opcion, where);
+            usdbh.close();
+            return cursor;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
     public  Cursor ContarEstado(String where){
         try {
             BaseDatosEngine usdbh = new BaseDatosEngine();

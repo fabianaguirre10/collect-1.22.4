@@ -103,7 +103,7 @@ public class informacionpuntoapp  extends AppCompatActivity implements OnMapRead
                 }
                 if (loc != null) {
                     origin = new LatLng(loc.getLatitude(), loc.getLongitude());
-                    dest = new LatLng(Double.parseDouble(objBranchSeccion.getE_LatitudeBranch()), Double.parseDouble(objBranchSeccion.getE_LenghtBranch()));
+                    dest = new LatLng(Double.parseDouble(objBranchSeccion.getE_LatitudeBranch()==null?"0":objBranchSeccion.getE_LatitudeBranch()), Double.parseDouble(objBranchSeccion.getE_LenghtBranch()==null?"0":objBranchSeccion.getE_LenghtBranch()));
                     drawPolylines();
                 }
             } else {
@@ -166,7 +166,7 @@ public class informacionpuntoapp  extends AppCompatActivity implements OnMapRead
                     BranchSession objBranchSeccion = new BranchSession();
                     mMap.clear();
                     origin = new LatLng(loc.getLatitude(), loc.getLongitude());
-                    dest = new LatLng(Double.parseDouble(objBranchSeccion.getE_LatitudeBranch()), Double.parseDouble(objBranchSeccion.getE_LenghtBranch()));
+                    dest = new LatLng(Double.parseDouble(objBranchSeccion.getE_LatitudeBranch()==null?"0":objBranchSeccion.getE_LatitudeBranch()), Double.parseDouble(objBranchSeccion.getE_LenghtBranch()==null?"0":objBranchSeccion.getE_LenghtBranch()));
                     drawPolylines();
                     mMap.addMarker(new MarkerOptions()
                             .position(origin)
@@ -189,8 +189,14 @@ public class informacionpuntoapp  extends AppCompatActivity implements OnMapRead
     }
     private void drawPolylines() {
         progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Please Wait, Polyline between two locations is building.");
-        progressDialog.setCancelable(false);
+        progressDialog.setMessage("Por favor espere, Polyline entre dos ubicaciones se está construyendo.");
+        progressDialog.setCancelable(true);
+        progressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                progressDialog.dismiss();//dismiss dialog
+            }
+        });
         progressDialog.show();
 
         // Checks, whether start and end locations are captured
@@ -199,7 +205,11 @@ public class informacionpuntoapp  extends AppCompatActivity implements OnMapRead
         Log.d("url", url + "");
         DownloadTask downloadTask = new DownloadTask();
         // Start downloading json data from Google Directions API
-        downloadTask.execute(url);
+        try {
+            downloadTask.execute(url);
+        }catch (Exception ex){
+            Toast.makeText(this, "Error Trazar ruta volver a intentar: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -267,9 +277,14 @@ public class informacionpuntoapp  extends AppCompatActivity implements OnMapRead
 
             try {
                 jObject = new JSONObject(jsonData[0]);
-                DirectionsJSONParser parser = new DirectionsJSONParser();
+                if(!jObject.get("status").equals("ZERO_RESULTS")) {
+                    DirectionsJSONParser parser = new DirectionsJSONParser();
 
-                routes = parser.parse(jObject);
+                    routes = parser.parse(jObject);
+                }else{
+                    Toast.makeText(informacionpuntoapp.this, "No se encontro ruta para graficar!!! reintentar...", Toast.LENGTH_SHORT).show();
+
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -279,36 +294,41 @@ public class informacionpuntoapp  extends AppCompatActivity implements OnMapRead
         @Override
         protected void onPostExecute(List<List<HashMap<String, String>>> result) {
 
-            progressDialog.dismiss();
-            Log.d("result", result.toString());
+
+
             ArrayList points = null;
             PolylineOptions lineOptions = null;
+            if(result!=null) {
+                Log.d("result", result.toString());
+                progressDialog.dismiss();
+                for (int i = 0; i < result.size(); i++) {
+                    points = new ArrayList();
+                    lineOptions = new PolylineOptions();
 
-            for (int i = 0; i < result.size(); i++) {
-                points = new ArrayList();
-                lineOptions = new PolylineOptions();
+                    List<HashMap<String, String>> path = result.get(i);
 
-                List<HashMap<String, String>> path = result.get(i);
+                    for (int j = 0; j < path.size(); j++) {
+                        HashMap<String, String> point = path.get(j);
 
-                for (int j = 0; j < path.size(); j++) {
-                    HashMap<String, String> point = path.get(j);
+                        double lat = Double.parseDouble(point.get("lat"));
+                        double lng = Double.parseDouble(point.get("lng"));
+                        LatLng position = new LatLng(lat, lng);
 
-                    double lat = Double.parseDouble(point.get("lat"));
-                    double lng = Double.parseDouble(point.get("lng"));
-                    LatLng position = new LatLng(lat, lng);
+                        points.add(position);
+                    }
 
-                    points.add(position);
+                    lineOptions.addAll(points);
+                    lineOptions.width(12);
+                    lineOptions.color(Color.RED);
+                    lineOptions.geodesic(true);
+
                 }
 
-                lineOptions.addAll(points);
-                lineOptions.width(12);
-                lineOptions.color(Color.RED);
-                lineOptions.geodesic(true);
-
-            }
-
 // Drawing polyline in the Google Map for the i-th route
-            mMap.addPolyline(lineOptions);
+                mMap.addPolyline(lineOptions);
+            }else{
+                Toast.makeText(informacionpuntoapp.this, "No se encontro ruta para graficar!!! reintentar...", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 

@@ -26,6 +26,7 @@ import org.javarosa.core.model.ValidateOutcome;
 import org.javarosa.core.model.condition.EvaluationContext;
 import org.javarosa.core.model.data.GeoPointData;
 import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.core.model.data.IntegerData;
 import org.javarosa.core.model.data.SelectOneData;
 import org.javarosa.core.model.data.StringData;
 import org.javarosa.core.model.data.helper.Selection;
@@ -47,12 +48,15 @@ import org.javarosa.model.xform.XPathReference;
 import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathExpression;
+import org.odk.collect.android.database.BaseDatosEngine.Entidades.BranchProducto;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.BranchSession;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.ConfiguracionSession;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.EstadoEditar;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.EstadoFormularioSession;
 import org.odk.collect.android.exception.JavaRosaException;
 import org.odk.collect.android.external.ExternalDataUtil;
+import org.odk.collect.android.fragments.Activos;
+import org.odk.collect.android.fragments.mapa;
 import org.odk.collect.android.utilities.AuditEventLogger;
 import org.odk.collect.android.utilities.FileUtils;
 import org.odk.collect.android.utilities.RegexUtils;
@@ -1224,6 +1228,12 @@ public class FormController {
         EstadoFormularioSession objseccion= new EstadoFormularioSession();
         ConfiguracionSession objconfiguracionSession = new ConfiguracionSession();
         EstadoEditar objestado= new EstadoEditar();
+        Activos activos= new Activos();
+        mapa mapa= new mapa();
+
+
+
+
         TreeElement trueSubmissionElement;
         // Determine the information about the submission...
         SubmissionProfile p = formDef.getSubmissionProfile();
@@ -1257,6 +1267,80 @@ public class FormController {
         TreeElement local = findDepthFirst(trueSubmissionElement, "DL_CO");
         TreeElement propietario = findDepthFirst(trueSubmissionElement, "datos_propietario");
         TreeElement cedula = findDepthFirst(trueSubmissionElement, "DI");
+        TreeElement q_compra = findDepthFirst(trueSubmissionElement, "q_compra");
+        if(q_compra!=null){
+           q_compra.clearCaches();
+            for (BranchProducto bp:activos.getListapro()) {
+                List<TreeElement> sku = q_compra.getChildrenWithName(bp.getE_cantSku());
+                if (sku.size() == 1) {
+                    IntegerData sa = (IntegerData) sku.get(0).getValue();
+                    if (sa != null) {
+                        bp.setE_valor(sa.getValue().toString());
+                    }
+                }
+
+            }
+            for (BranchProducto bp:mapa.getListapro()) {
+                List<TreeElement> sku = q_compra.getChildrenWithName(bp.getE_cantSku());
+                if (sku.size() == 1) {
+                    IntegerData sa = (IntegerData) sku.get(0).getValue();
+                    if (sa != null) {
+                        bp.setE_valor(sa.getValue().toString());
+
+
+                    }
+                }
+
+            }
+        }
+        if(q_compra!=null){
+            q_compra.clearCaches();
+            for (BranchProducto bp:activos.getListapro()) {
+                List<TreeElement> sku_stock = q_compra.getChildrenWithName("stock_"+bp.getE_codproducto());
+
+                if (sku_stock.size() == 1) {
+
+                    IntegerData sa = (IntegerData) sku_stock.get(0).getValue();
+                    if (sa != null) {
+                        IntegerData respuesta = new IntegerData();
+                        respuesta.setValue(Integer.valueOf((int) bp.getE_stock()));
+                        IAnswerData iAnswerData = (IAnswerData) respuesta;
+                        sku_stock.get(0).setValue(iAnswerData);
+                        if(bp.getE_stock()==0){
+                            q_compra.removeChildren("stock_"+bp.getE_codproducto());
+                        }else {
+                            sku_stock.get(0).clearChildrenCaches();
+                            sku_stock.get(0).clearCaches();
+                            if(q_compra.getChildrenWithName("stock_"+bp.getE_codproducto())==null)
+                                q_compra.addChild(sku_stock.get(0));
+                        }
+
+
+                    }
+                }
+
+            }
+            for (BranchProducto bp:mapa.getListapro()) {
+                List<TreeElement> sku_stock = q_compra.getChildrenWithName("stock_"+bp.getE_codproducto());
+
+                if (sku_stock.size() == 1) {
+                    IntegerData sa = (IntegerData) sku_stock.get(0).getValue();
+                    if (sa != null) {
+                        IntegerData respuesta = new IntegerData();
+                        respuesta.setValue(Integer.valueOf((int) bp.getE_stock()));
+                        IAnswerData iAnswerData = (IAnswerData) respuesta;
+                        sku_stock.get(0).setValue(iAnswerData);
+                        if(bp.getE_stock()==0){
+                            q_compra.removeChildren("stock_"+bp.getE_codproducto());
+
+                        }
+
+                    }
+                }
+
+            }
+        }
+
 
         /*valida existe o nuevo*/
         TreeElement existe_nuevo=findDepthFirst(trueSubmissionElement, "existe_nuevo");
@@ -1688,9 +1772,11 @@ public class FormController {
             if (elemento != null) {
                 List<TreeElement> local_nombre;
                 local_nombre = elemento.getChildrenWithName(e_nombre);
-                StringData sa = (StringData) local_nombre.get(0).getValue();
-                if (sa != null) {
-                    Dato = sa.getValue().toString();
+                if(local_nombre.size()!=0) {
+                    StringData sa = (StringData) local_nombre.get(0).getValue();
+                    if (sa != null) {
+                        Dato = sa.getValue().toString();
+                    }
                 }
             }
         }
@@ -1698,10 +1784,12 @@ public class FormController {
             if (elemento != null) {
                 List<TreeElement> local_nombre;
                 local_nombre = elemento.getChildrenWithName(e_nombre);
-                SelectOneData sa = (SelectOneData) local_nombre.get(0).getValue();
-                if (sa != null) {
-                    Selection a = (Selection) sa.getValue();
-                    Dato =a.getValue();
+                if(local_nombre.size()!=0) {
+                    SelectOneData sa = (SelectOneData) local_nombre.get(0).getValue();
+                    if (sa != null) {
+                        Selection a = (Selection) sa.getValue();
+                        Dato = a.getValue();
+                    }
                 }
             }
         }
@@ -1717,25 +1805,26 @@ public class FormController {
         if(elemento!=null) {
             List<TreeElement> local_nombre;
             local_nombre = elemento.getChildrenWithName(e_nombre);
-            if (validador != null) {
-                ////nombre local
-                List<TreeElement> coincide_local;
-                StringData sa = (StringData) local_nombre.get(0).getValue();
-                coincide_local = validador.getChildrenWithName(campovalidador);
-                if (coincide_local.size() == 1) {
-                    SelectOneData clb = (SelectOneData) coincide_local.get(0).getValue();
-                    if (clb != null) {
-                        Selection a = (Selection) clb.getValue();
-                        if(a.getValue().equals("no") && sa != null)
-                        {
+            if (local_nombre.size() != 0) {
+                if (validador != null) {
+                    ////nombre local
+                    List<TreeElement> coincide_local;
+                    StringData sa = (StringData) local_nombre.get(0).getValue();
+                    coincide_local = validador.getChildrenWithName(campovalidador);
+                    if (coincide_local.size() == 1) {
+                        SelectOneData clb = (SelectOneData) coincide_local.get(0).getValue();
+                        if (clb != null) {
+                            Selection a = (Selection) clb.getValue();
+                            if (a.getValue().equals("no") && sa != null) {
 
-                            Dato =  sa.getValue().toString();
+                                Dato = sa.getValue().toString();
+                            }
                         }
                     }
+
                 }
 
             }
-
         }
         return Dato;
     }

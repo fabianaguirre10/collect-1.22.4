@@ -228,5 +228,40 @@ public class EstructuraBD {
         }
 
     }
+    interface ColumnasProductos{
+        String codproducto="codproducto";
+        String name="name";
+        String pvp="pvp";
+        String categoria="categoria";
+        String stock="stock";
+        String descripcion="descripcion";
+        String codigosecundario="codigosecundario";
+        String estado="estado";
+        String id_cat_mae="id_cat_mae";
+        String des_categoria="des_categoria";
+
+    }
+    public static class CabeceraProductos implements ColumnasProductos {
+        public static String generarIdCabeceraPedido() {
+            return "CP-" + UUID.randomUUID().toString();
+        }
+
+    }
+    interface ColumnasOperaciones{
+        String cantidad="cantidad";
+        String codproducto="codproducto";
+        String tipooperacion="tipooperacion";
+        String fecha="fecha";
+        String codlocal="codlocal";
+        String stock="stock";
+        String estado="estado";
+    }
+    public static class CabeceraOperaciones implements ColumnasOperaciones {
+        public static String generarIdCabeceraPedido() {
+            return "CP-" + UUID.randomUUID().toString();
+        }
+
+    }
+
 
 }

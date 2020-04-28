@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,10 +25,14 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.odk.collect.android.activities.Engine_util;
 import org.odk.collect.android.activities.FormChooserList;
+import org.odk.collect.android.database.BaseDatosEngine.Entidades.BranchProducto;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.BranchSession;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.CodigoSession;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.FiltrosBusqueda;
 import  org.odk.collect.android.activities.informacionpuntoapp;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Administrador1 on 14/3/2018.
@@ -40,6 +45,16 @@ public class mapa extends SupportMapFragment implements GoogleMap.OnMarkerClickL
     private GoogleMap mMap;
     final BranchSession objBranchSeccion = new BranchSession();
     Engine_util objutil;
+    private TelephonyManager mTelephonyManager;
+    public static List<BranchProducto> getListapro() {
+        return listapro;
+    }
+
+    public static void setListapro(List<BranchProducto> listapro) {
+        mapa.listapro = listapro;
+    }
+
+    static List<BranchProducto> listapro= new ArrayList<>();
     final CodigoSession objcodigoSession = new CodigoSession();
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -98,6 +113,8 @@ public class mapa extends SupportMapFragment implements GoogleMap.OnMarkerClickL
 
 
                     mMap.addMarker(Opc);
+
+
                 }
             } while (cursor.moveToNext());
 
@@ -109,7 +126,7 @@ public class mapa extends SupportMapFragment implements GoogleMap.OnMarkerClickL
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                mMap.clear();
+                //mMap.clear();
                 Toast.makeText(
                         getActivity(),
                         "Punto:"+ marker.getTitle()+" \n" +
@@ -181,8 +198,30 @@ public class mapa extends SupportMapFragment implements GoogleMap.OnMarkerClickL
                         objBranchSeccion.setE_LatitudeBranch(objseleccionado.getString(16).toString());
                         objBranchSeccion.setE_LenghtBranch(objseleccionado.getString(17).toString());
                         objBranchSeccion.setE_fotoexterior(objseleccionado.getString(24).toString());
+                        String where1="";
+                        String opcion = "";
+                        String[] args = new String[]{};
+                        where = "where 1=1 and Estado ='A'";
+                        objutil= new Engine_util();
+                        Cursor cursor = objutil.Listarproductos(args, opcion, where1);
+                        int cod=0;
+                        listapro.clear();
+                        if (cursor.moveToFirst()) {
 
-
+                            do {
+                                BranchProducto branchProducto= new BranchProducto();
+                                branchProducto.setE_code(objBranchSeccion.getE_code());
+                                branchProducto.setE_cantSku(cursor.getString(4));
+                                branchProducto.setE_valor("0");
+                                branchProducto.setE_productname(cursor.getString(2));
+                                branchProducto.setE_codproducto(cursor.getString(6));
+                                branchProducto.setE_stock(cursor.getDouble(5));
+                                branchProducto.set_id(cursor.getInt(0)); ;
+                                cod++;
+                                listapro.add( branchProducto);
+                            } while (cursor.moveToNext());
+                        }
+                        mTelephonyManager = (TelephonyManager) getContext().getSystemService(getContext().TELEPHONY_SERVICE);
                         final android.app.AlertDialog.Builder builder;
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                             builder = new android.app.AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
@@ -190,8 +229,9 @@ public class mapa extends SupportMapFragment implements GoogleMap.OnMarkerClickL
                             builder = new android.app.AlertDialog.Builder(getActivity());
                         }
                         builder.setTitle("Iniciar Tarea");
-                        builder.setMessage(objseleccionado.getString(5));
-                        builder.setPositiveButton("Formulario", new DialogInterface.OnClickListener() {
+                        builder.setMessage("Local: "+objseleccionado.getString(5)+
+                                '\n'+"Propietario: "+objBranchSeccion.getE_propietario()+ '\n'+"Dirección: "+objBranchSeccion.getE_mainStreet());
+                        builder.setPositiveButton("Pedidos", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 startActivity(new Intent(getActivity().getApplication(), FormChooserList.class)
                                         .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
@@ -221,6 +261,7 @@ public class mapa extends SupportMapFragment implements GoogleMap.OnMarkerClickL
 
 
                 return true;
+
             }
         });
 

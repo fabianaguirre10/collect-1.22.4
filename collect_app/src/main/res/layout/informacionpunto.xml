@@ -15,10 +15,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:weightSum="4"
           >
             <TextView
                 android:id="@+id/txtcodigo"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
+                android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/roboto_light"
                 android:text="SELECCIÓN "
@@ -28,7 +30,8 @@
 
             <TextView
                 android:id="@+id/txtnombre"
-                android:layout_width="178dp"
+                android:layout_width="0dp"
+                android:layout_weight="2"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/roboto_bold"
                 android:text="CAMPAÑA"
@@ -38,7 +41,8 @@
 
             <ImageButton
                 android:id="@+id/imgBtnOk"
-                android:layout_width="50dp"
+                android:layout_width="0dp"
+                android:layout_weight=".5"
                 android:layout_height="50dp"
                 android:onClick="actualizar"
 
@@ -46,7 +50,8 @@
 
             <ImageButton
                 android:id="@+id/imgform"
-                android:layout_width="50dp"
+                android:layout_width="0dp"
+                android:layout_weight=".5"
                 android:layout_height="50dp"
                 android:onClick="formulario"
                 android:background="@drawable/formnuevo" />
@@ -70,10 +75,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:weightSum="2"
             tools:ignore="MissingConstraints">
             <TextView
                 android:id="@+id/txtnombrecliente"
-                android:layout_width="150dp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/roboto_light"
                 android:text="SELECCIÓN "
@@ -82,7 +89,8 @@
                 app:layout_constraintTop_toTopOf="parent" />
             <TextView
                 android:id="@+id/txtdirecion"
-                android:layout_width="150dp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/roboto_bold"
                 android:text="CAMPAÑA"

@@ -238,11 +238,8 @@ public class principal extends AppCompatActivity {
         btninforme.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (cmbnumeroruta.getSelectedItem().toString().equals("") == false) {
-
-
-
-                }
+                Intent intent = new Intent(getApplication(), ListProductDes.class);
+                startActivityForResult(intent, 0);
             }
 
         });

@@ -22,6 +22,7 @@ import org.odk.collect.android.R;
 import org.odk.collect.android.activities.Engine_util;
 import org.odk.collect.android.activities.FormChooserList;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.Branch;
+import org.odk.collect.android.database.BaseDatosEngine.Entidades.BranchProducto;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.BranchSession;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.CodigoSession;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.ConfiguracionSession;
@@ -42,9 +43,18 @@ public class Activos  extends Fragment {
     final BranchSession objBranchSeccion = new BranchSession();
     EstadoFormularioSession objseccion= new EstadoFormularioSession();
     Engine_util objutil;
+     static List<BranchProducto> listapro= new ArrayList<>();
     final CodigoSession objcodigoSession = new CodigoSession();
     public Activos() {
 
+    }
+
+    public static List<BranchProducto> getListapro() {
+        return listapro;
+    }
+
+    public static void setListapro(List<BranchProducto> listapro) {
+        Activos.listapro = listapro;
     }
 
     /*public Activos() {
@@ -172,6 +182,34 @@ public class Activos  extends Fragment {
                                         Toast.LENGTH_SHORT).show();
                             /*Intent i = new Intent(getActivity(), FormChooserList.class);
                             startActivity(i);*/
+
+                                String where1="";
+                                String opcion = "";
+                                String[] args = new String[]{};
+                                where = "where 1=1 and Estado ='A'";
+                                objutil= new Engine_util();
+                                Cursor cursor = objutil.Listarproductos(args, opcion, where1);
+                                int cod=0;
+                                listapro.clear();
+                                if (cursor.moveToFirst()) {
+
+                                    do {
+                                        BranchProducto branchProducto= new BranchProducto();
+                                        branchProducto.setE_code(objBranchSeccion.getE_code());
+                                        branchProducto.setE_cantSku(cursor.getString(4));
+                                        branchProducto.setE_valor("0");
+                                        branchProducto.setE_productname(cursor.getString(2));
+                                        branchProducto.setE_codproducto(cursor.getString(6));
+                                        branchProducto.setE_stock(cursor.getDouble(5));
+                                        branchProducto.set_id(cursor.getInt(0)); ;
+                                        cod++;
+                                        listapro.add( branchProducto);
+                                    } while (cursor.moveToNext());
+                                }
+
+
+
+
                                 startActivity(new Intent(getActivity().getApplication(), FormChooserList.class)
                                         .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
 
