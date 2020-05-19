@@ -2,6 +2,8 @@ package org.odk.collect.android.logic;
 
 import android.graphics.drawable.Drawable;
 
+import androidx.annotation.NonNull;
+
 /**
  * Created by Administrador1 on 15/2/2018.
  */
@@ -62,4 +64,9 @@ public class Category {
 
     public void setCategoryId(String categoryId){this.categoryId = categoryId;}
 
+    @NonNull
+    @Override
+    public String toString() {
+        return description;
+    }
 }

@@ -113,19 +113,7 @@ public class FormChooserList extends FormListActivity implements
         setupAdapter();
         getSupportLoaderManager().initLoader(LOADER_ID, null, this);
     }
-    @Override
-    public void onBackPressed(){
-        if (tiempoPrimerClick + INTERVALO > System.currentTimeMillis()){
-            super.onBackPressed();
-            startActivity(new Intent(this, principal.class)
-                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
-            finish();
-            return;
-        }else {
-            Toast.makeText(this, "Esta seguro que desea regresar a la ruta.", Toast.LENGTH_SHORT).show();
-        }
-        tiempoPrimerClick = System.currentTimeMillis();
-    }
+
     @Override
     public Object onRetainCustomNonConfigurationInstance() {
         // pass the thread on restart
@@ -142,41 +130,6 @@ public class FormChooserList extends FormListActivity implements
             long idFormsTable = listView.getAdapter().getItemId(position);
             Uri formUri = ContentUris.withAppendedId(FormsColumns.CONTENT_URI, idFormsTable);
 
-            String nombre= ((CrossProcessCursorWrapper) parent.getItemAtPosition(position)).getString(2);
-
-
-
-            BranchSession objFormularios= new BranchSession();
-            if(objFormularios.getE_fmedicion().equals(nombre)){
-                if(objFormularios.getE_festadomedicion().equals("ok") && !objFormularios.getE_EstadoFormulario().equals("cerrado")) {
-                    Toast.makeText(this, "Tarea ya realizada por cliente", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-            }
-            if(objFormularios.getE_factividades().equals(nombre)){
-                if(objFormularios.getE_festadoactividades().equals("ok") && !objFormularios.getE_EstadoFormulario().equals("cerrado")) {
-                    Toast.makeText(this, "Tarea ya realizada por cliente", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-            }
-            if(objFormularios.getE_fpercha().equals(nombre)){
-                if(objFormularios.getE_festadopercha().equals("ok")) {
-                    Toast.makeText(this, "Tarea ya realizada por cliente", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-            }
-            if(objFormularios.getE_fpop().equals(nombre)){
-                if(objFormularios.getE_festadopop().equals("ok")) {
-                    Toast.makeText(this, "Tarea ya realizada por cliente", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-            }
-            if(objFormularios.getE_fpromocion().equals(nombre)){
-                if(objFormularios.getE_festadopromocion().equals("ok")) {
-                    Toast.makeText(this, "Tarea ya realizada por cliente", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-            }
 
 
             String action = getIntent().getAction();
@@ -189,8 +142,8 @@ public class FormChooserList extends FormListActivity implements
                 intent.putExtra(ApplicationConstants.BundleKeys.FORM_MODE, ApplicationConstants.FormModes.EDIT_SAVED);
                 startActivity(intent);
             }
-            
-            //finish();
+
+            finish();
         }
     }
 

@@ -17,6 +17,7 @@ import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
@@ -32,11 +33,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.odk.collect.android.R;
+import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.database.BaseDatosEngine.BaseDatosEngine;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.Capania;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.ConfiguracionDB;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.ConfiguracionSession;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.CuentaSession;
+import org.odk.collect.android.database.BaseDatosEngine.Entidades.Producto;
 import org.odk.collect.android.database.BaseDatosEngine.EstructuraBD;
 
 import java.io.BufferedReader;
@@ -54,16 +57,15 @@ public class configuracion extends AppCompatActivity {
     RadioButton radnombre;
     RadioButton radcodigo;
     JSONArray respJSON= new JSONArray();
+    JSONArray respJSONPr= new JSONArray();
+    JSONArray respJSONDs= new JSONArray();
     final CuentaSession objcuentaSession= new CuentaSession();
     final ConfiguracionSession objconfiguracionSession= new ConfiguracionSession();
     String Estado="";
-    //fuente dyvenpro actualizado subir repositoriodd...
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configuracion);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
         cmbcuentacamp=(Spinner) findViewById(R.id.cmbcampaniaCL);
         Button btnCargarCodigosCL=(Button)findViewById(R.id.btncargarlocalesCL);
         Button btncargarlocalcuenta=(Button)findViewById(R.id.btncargarlocalcuenta);
@@ -128,6 +130,7 @@ public class configuracion extends AppCompatActivity {
                             R.string.no_connection, Toast.LENGTH_SHORT).show();
 
                 }
+
             }
 
         });
@@ -169,6 +172,8 @@ public class configuracion extends AppCompatActivity {
                         usdbh = usdbh.open();
                         usdbh.EliminarRegistros();
                         usdbh.EliminarRegistrosCodigos();
+                        usdbh.EliminarRegistrosProductos();
+                        usdbh.EliminarRegistrosProductosOrde();
                         usdbh.close();
                         CargarLocales fetchJsonTask = new CargarLocales(v.getContext());
                         fetchJsonTask.execute();
@@ -184,7 +189,6 @@ public class configuracion extends AppCompatActivity {
             }
 
         });
-
     }
 
     public void CargarListacuenta(){
@@ -231,30 +235,18 @@ public class configuracion extends AppCompatActivity {
     }
     @SuppressLint("MissingPermission")
     public String  obterImeid(){
-        String myIMEI = "0";
+
+        final String androidIdName = Settings.Secure.ANDROID_ID;
+        String myIMEI = Settings.Secure.getString(Collect.getInstance().getApplicationContext().getContentResolver(), androidIdName);
+        TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
         TelephonyManager mTelephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        if (mTelephony.getDeviceId() != null){
+
+        if (mTelephony.getDeviceId() != null) {
             myIMEI = mTelephony.getDeviceId();
         }
+
+
         return myIMEI;
-    }
-    private static String agregarCeros(@NotNull String string, int largo)
-    {
-        String ceros = "";
-
-        int cantidad = largo - string.length();
-
-        if (cantidad >= 1)
-        {
-            for(int i=0;i<cantidad;i++)
-            {
-                ceros += "0";
-            }
-
-            return (ceros + string);
-        }
-        else
-            return string;
     }
     //clase para cargar campania
     public class CargarCampaniasCuentas extends AsyncTask<Void,Void,String> {
@@ -288,13 +280,15 @@ public class configuracion extends AppCompatActivity {
 
             try {
                 // Construct the URL somehow
-                String url1 = "http://geomardis6728.cloudapp.net/msdyvenproodk/api/Canpania";
+                String url1 = "http://geomardis6728.cloudapp.net/msbancoGuayaquil/api/Canpania";
                 URL url = new URL(url1);
 
                 // Create the request to MuslimSalat.com, and open the connection
 
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
+                ///pasas paretros
+
                 urlConnection.connect();
 
                 // Read the input stream into a String
@@ -447,7 +441,7 @@ public class configuracion extends AppCompatActivity {
                 // Construct the URL somehow
                 String Idaccount =objcuentaSession.getCu_idAccount();
                 String Idcampania="";
-                String url1 = "http://geomardis6728.cloudapp.net/msdyvenproodk/api/Task?idAccount="+Idaccount+"&Imeid="+obterImeid();
+                String url1 = "http://geomardis6728.cloudapp.net/msBGE/api/Task?idAccount="+Idaccount+"&Imeid="+obterImeid();
                 URL url = new URL(url1);
 
                 // Create the request to MuslimSalat.com, and open the connection
@@ -538,22 +532,11 @@ public class configuracion extends AppCompatActivity {
                             String celular = obj.getString("celular");
                             String TypeBusiness  = obj.getString("typeBusiness");
                             String cedula=obj.getString("cedula");
-                            String actividad=obj.getString("actividad").replace("[","").replace("]","");
-                            String[] actividades = actividad.split(",");
-                            String actividadesformularios="";
-
-                            for (String a:actividades)
-                            {
-
-                                    actividadesformularios = actividadesformularios + "X" + agregarCeros(a,3) + "-";
-
-                            }
-
-                            String comment=obj.getString("comment");
                             //storeaudit
-                            //String ESTADOAGGREGATE=obj.getString("estadoaggregate");
+                            String ESTADOAGGREGATE=obj.getString("estadoaggregate");
+                            String Link=obj.getString("link");
                             //censo
-                            String ESTADOAGGREGATE="S";
+                            //String ESTADOAGGREGATE="S";
                             BaseDatosEngine usdbh = new BaseDatosEngine();
 
                             if(jumpTime==0){
@@ -599,14 +582,7 @@ public class configuracion extends AppCompatActivity {
                                 Objdatos.put(EstructuraBD.CabecerasEngine.TypeBusiness, TypeBusiness);
                                 Objdatos.put(EstructuraBD.CabecerasEngine.Cedula, cedula);
                                 Objdatos.put(EstructuraBD.CabecerasEngine.ESTADOAGGREGATE,ESTADOAGGREGATE);
-                                Objdatos.put(EstructuraBD.CabecerasEngine.comment,comment);
-                                Objdatos.put(EstructuraBD.CabecerasEngine.formulariomedicion,"I");
-                                Objdatos.put(EstructuraBD.CabecerasEngine.formulariopercha,"I");
-                                Objdatos.put(EstructuraBD.CabecerasEngine.formulariopop,"I");
-                                Objdatos.put(EstructuraBD.CabecerasEngine.formulariopromocion,"I");
-                                Objdatos.put(EstructuraBD.CabecerasEngine.actividades,actividadesformularios);
-                                Objdatos.put(EstructuraBD.CabecerasEngine.formularioactividades,"I");
-
+                                Objdatos.put(EstructuraBD.CabecerasEngine.Foto_Exterior,Link);
                                 usdbh.insertardatos(Objdatos);
                                 usdbh.close();
                             } catch (Exception e) {
@@ -631,17 +607,355 @@ public class configuracion extends AppCompatActivity {
 
 
                     progress.dismiss();
+
+                }
+            };
+            t.start();
+
+                CargarProductos cargarProductos = new CargarProductos(context);
+                cargarProductos.execute();
+
+        }
+    }
+
+
+    ///CLASES CARGAR PRRODUCTOSD E INVENTARIO
+
+    public   class CargarProductos extends AsyncTask<Void, Void, String> {
+        private  ProgressDialog progressDialog;
+        private  Context context;
+
+        public CargarProductos(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            // set up progress dialog
+            try {
+                progressDialog = new ProgressDialog(context);
+                progressDialog.setIndeterminate(true);
+                progressDialog.setCanceledOnTouchOutside(false);
+                progressDialog.setMessage("Please wait...");
+
+                // show it
+                progressDialog.show();
+            }catch (Exception ex){
+                //Log.e(BonusPackHelper.LOG_TAG, "Error ", ex);
+            }
+
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+            // These two need to be declared outside the try/catch
+            // so that they can be closed in the finally block.
+            HttpURLConnection urlConnection = null;
+            BufferedReader reader = null;
+
+            // Will contain the raw JSON response as a string.
+            String jsonStr = null;
+
+            try {
+                // Construct the URL somehow
+                String Idaccount =objcuentaSession.getCu_idAccount();
+                String Idcampania="";
+                String url1 = "http://geomardis6728.cloudapp.net/msNutri/api/Task/ProductNutri";
+                URL url = new URL(url1);
+
+                // Create the request to MuslimSalat.com, and open the connection
+
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.connect();
+
+                // Read the input stream into a String
+                InputStream inputStream = urlConnection.getInputStream();
+                StringBuffer buffer = new StringBuffer();
+                if (inputStream == null) {
+                    // Nothing to do.
+                    return null;
+                }
+                reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+
+                    buffer.append(line + "\n");
+                }
+
+                if (buffer.length() == 0) {
+
+                    return null;
+                }
+                jsonStr = buffer.toString();
+
+
+                respJSONPr = new JSONArray(jsonStr);
+            } catch (IOException e) {
+                return null;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } finally{
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (final IOException e) {
+                    }
+                }
+            }
+
+            return jsonStr;
+        }
+
+        @Override
+        protected void onPostExecute(String jsonString) {
+            progressDialog.dismiss();
+            progress=new ProgressDialog(context);
+            progress.setMessage("Descargando Productos....");
+            progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            // progress.setIndeterminate(true);
+            progress.setCanceledOnTouchOutside(false);
+
+            progress.setProgress(0);
+            progress.setMax(respJSONPr.length());
+            progress.show();
+            final int totalProgressTime = respJSONPr.length();
+            final Thread t = new Thread() {
+                @Override
+                public void run() {
+                    int jumpTime = 0;
+                    int cod=1;
+                    while(jumpTime < totalProgressTime) {
+                        try {
+                            JSONObject obj = respJSONPr.getJSONObject(jumpTime);
+                            String id = obj.getString("id");
+                            String id_mae = obj.getString("id_mae");
+                            String name = obj.getString("name");
+                            String bardcore = obj.getString("bardcore");
+                            String id_cat_mae = obj.getString("id_cat_mae");
+                            String des_categoria = obj.getString("des_categoria");
+
+                            //censo
+                            //String ESTADOAGGREGATE="S";
+                            BaseDatosEngine usdbh = new BaseDatosEngine();
+
+
+                            try {
+                                usdbh = usdbh.open();
+                                ContentValues Objdatos = new ContentValues();
+                                Objdatos.put(EstructuraBD.CabeceraProductos.codigosecundario, id);
+                                Objdatos.put(EstructuraBD.CabeceraProductos.codproducto, bardcore);
+                                Objdatos.put(EstructuraBD.CabeceraProductos.descripcion, id_mae);
+                                Objdatos.put(EstructuraBD.CabeceraProductos.id_cat_mae, id_cat_mae);
+                                Objdatos.put(EstructuraBD.CabeceraProductos.des_categoria, des_categoria);
+                                Objdatos.put(EstructuraBD.CabeceraProductos.estado, "A");
+                                Objdatos.put(EstructuraBD.CabeceraProductos.pvp, "0");
+                                Objdatos.put(EstructuraBD.CabeceraProductos.stock, "0");
+                                Objdatos.put(EstructuraBD.CabeceraProductos.name, name);
+                                Objdatos.put(EstructuraBD.CabeceraProductos.categoria, "cant_sku"+id_mae);
+                                usdbh.insertardatosproductos(Objdatos);
+                                usdbh.close();
+                            } catch (Exception e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
+                            jumpTime += 1;
+                            cod++;
+                            progress.setProgress(jumpTime);
+                            sleep(25);
+                        }
+                        catch (InterruptedException e) {
+                            Log.e("Error Carga",e.getMessage());
+                        } catch (JSONException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+
+
+
+                    progress.dismiss();
+
+                }
+            };
+            t.start();
+            try {
+                t.join();
+                CargarProductosStock cargarProductosStock = new CargarProductosStock(context);
+                cargarProductosStock.execute();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+///Clase actualizar productos stock
+
+    public   class CargarProductosStock extends AsyncTask<Void, Void, String> {
+        private  ProgressDialog progressDialog;
+        private  Context context;
+
+        public CargarProductosStock(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            // set up progress dialog
+            try {
+                progressDialog = new ProgressDialog(context);
+                progressDialog.setIndeterminate(true);
+                progressDialog.setCanceledOnTouchOutside(false);
+                progressDialog.setMessage("Please wait...");
+
+                // show it
+                progressDialog.show();
+            }catch (Exception ex){
+                //Log.e(BonusPackHelper.LOG_TAG, "Error ", ex);
+            }
+
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+            // These two need to be declared outside the try/catch
+            // so that they can be closed in the finally block.
+            HttpURLConnection urlConnection = null;
+            BufferedReader reader = null;
+
+            // Will contain the raw JSON response as a string.
+            String jsonStr = null;
+
+            try {
+                // Construct the URL somehow
+                String Idaccount =objcuentaSession.getCu_idAccount();//"85024910-FC12-4DD8-AE58-761BF972DEB7";
+                String Idcampania="";
+                String url1 = "http://geomardis6728.cloudapp.net/msNutri/api/Task/ProductNutriDisponibilidad?idAccount="+Idaccount+"&Imei="+obterImeid();//"454";
+                URL url = new URL(url1);
+
+                // Create the request to MuslimSalat.com, and open the connection
+
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.connect();
+
+                // Read the input stream into a String
+                InputStream inputStream = urlConnection.getInputStream();
+                StringBuffer buffer = new StringBuffer();
+                if (inputStream == null) {
+                    // Nothing to do.
+                    return null;
+                }
+                reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+
+                    buffer.append(line + "\n");
+                }
+
+                if (buffer.length() == 0) {
+
+                    return null;
+                }
+                jsonStr = buffer.toString();
+
+
+                respJSONDs = new JSONArray(jsonStr);
+            } catch (IOException e) {
+                return null;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } finally{
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (final IOException e) {
+                    }
+                }
+            }
+
+            return jsonStr;
+        }
+
+        @Override
+        protected void onPostExecute(String jsonString) {
+            progressDialog.dismiss();
+            progress=new ProgressDialog(context);
+            progress.setMessage("Descargando Productos Stock....");
+            progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            // progress.setIndeterminate(true);
+            progress.setCanceledOnTouchOutside(false);
+
+            progress.setProgress(0);
+            progress.setMax(respJSONDs.length());
+            progress.show();
+            final int totalProgressTime = respJSONDs.length();
+            final Thread t = new Thread() {
+                @Override
+                public void run() {
+                    int jumpTime = 0;
+                    while(jumpTime < totalProgressTime) {
+                        try {
+                            JSONObject obj = respJSONDs.getJSONObject(jumpTime);
+
+                            String bardcore = obj.getString("bardCode");
+                            String cantidad = obj.getString("cant");
+
+
+                            //censo
+                            //String ESTADOAGGREGATE="S";
+                            BaseDatosEngine usdbh = new BaseDatosEngine();
+
+
+                            try {
+                                usdbh = usdbh.open();
+                                ContentValues Objdatos = new ContentValues();
+                                Objdatos.put(EstructuraBD.CabeceraProductos.stock,cantidad );
+                                String where2 = "codproducto='" + bardcore
+                                        + "'";
+                                usdbh.ActualizarTablaStock(Objdatos, where2);
+                                usdbh.close();
+                            } catch (Exception e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
+                            jumpTime += 1;
+                            progress.setProgress(jumpTime);
+                            sleep(25);
+                        }
+                        catch (InterruptedException e) {
+                            Log.e("Error Carga",e.getMessage());
+                        } catch (JSONException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+
+
+
+                    progress.dismiss();
                     if(totalProgressTime>0){
-                        startActivity(new Intent(context, principal.class)
-                                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
-                        finish();
+
                     }
                 }
             };
             t.start();
+
+               // t.join();
+                startActivity(new Intent(context, principal.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
+                finish();
+
         }
     }
-}
 
+}
 
 

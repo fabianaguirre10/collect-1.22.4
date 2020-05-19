@@ -35,6 +35,7 @@ import org.odk.collect.android.adapters.InstanceListCursorAdapter;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.dao.InstancesDao;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.BranchSession;
+import org.odk.collect.android.database.BaseDatosEngine.Entidades.CodigoSession;
 import org.odk.collect.android.listeners.DiskSyncListener;
 import org.odk.collect.android.listeners.PermissionListener;
 import org.odk.collect.android.provider.InstanceProviderAPI;
@@ -125,30 +126,20 @@ public class InstanceChooserList extends InstanceListActivity implements
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (Collect.allowClick(getClass().getName())) {
-            BranchSession objBranchSeccion = new BranchSession();
+            BranchSession objBranchSessio=new BranchSession();
+            objBranchSessio.setE_code("");
+            objBranchSessio.setE_name("");
+            objBranchSessio.setE_externalCode("");
+            objBranchSessio.setE_ID("");
+            objBranchSessio.setE_idAccount("");
+            objBranchSessio.setE_rutaaggregate("");
+            objBranchSessio.setE_TypeBusiness("");
+            objBranchSessio.setE_Cedula("");
+            objBranchSessio.setE_Phone("");
+            CodigoSession codse= new CodigoSession();
+            codse.setC_code("");
+            codse.setcId("");
 
-            objBranchSeccion.setE_ID("");
-            objBranchSeccion.setE_idbranch("");
-            objBranchSeccion.setE_idAccount("");
-            objBranchSeccion.setE_externalCode("");
-            objBranchSeccion.setE_code("");
-            objBranchSeccion.setE_neighborhood("");
-            objBranchSeccion.setE_mainStreet("");
-            objBranchSeccion.setE_reference("");
-            objBranchSeccion.setE_propietario("");
-            objBranchSeccion.setE_uriformulario("");
-            objBranchSeccion.setE_idprovince("");
-            objBranchSeccion.setE_iddistrict("");
-            objBranchSeccion.setE_idParish("");
-            objBranchSeccion.setE_rutaaggregate("");
-            objBranchSeccion.setE_imeI_ID("");
-            objBranchSeccion.setE_Colabora("");
-            objBranchSeccion.setE_TypeBusiness("");
-            objBranchSeccion.setE_Phone("");
-            objBranchSeccion.setE_name("");
-            objBranchSeccion.setE_reference("");
-            objBranchSeccion.setE_Cedula("");
-            objBranchSeccion.setE_comment("");
 
             if (view.isEnabled()) {
                 Cursor c = (Cursor) listView.getAdapter().getItem(position);

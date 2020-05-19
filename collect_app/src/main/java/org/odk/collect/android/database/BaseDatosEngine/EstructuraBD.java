@@ -32,14 +32,7 @@ public class EstructuraBD {
         String TypeBusiness="TypeBusiness";
         String Cedula="Cedula";
         String ESTADOAGGREGATE="ESTADOAGGREGATE";
-        String comment="comment";
-        String formulariomedicion="FMEDICION";
-        String formulariopercha="FPERCHA";
-        String formulariopop ="FPOP";
-        String formulariopromocion ="FPROMOCION";
-        String formularioactividades ="FACTIVIDADES";
-        String actividades  ="actividades";
-
+        String Foto_Exterior="Foto_Exterior";
     }
     public static class CabecerasEngine implements ColumnasEngine {
         public static String generarIdCabeceraPedido() {
@@ -198,6 +191,72 @@ public class EstructuraBD {
         String Estado="Estado";
     }
     public static class CabeceraConfiguracion implements ColumnasConfiguracion {
+        public static String generarIdCabeceraPedido() {
+            return "CP-" + UUID.randomUUID().toString();
+        }
+
+    }
+    interface ColumnasEstadoFormulario{
+
+         String idAccount="idAccount"  ;
+         String IdCampania="IdCampania" ;
+         String code="code" ;
+         String ruta="ruta" ;
+         String estadovisita="estadovisita" ;
+         String estadointeres="estadointeres" ;
+         String nombrelocal="nombrelocal" ;
+         String direccion="direccion" ;
+         String referencia="referencia" ;
+         String barrio="barrio" ;
+         String latitud="latitud" ;
+         String longitud="longitud" ;
+         String nombrepro="nombrepro" ;
+         String apellidopropi="apellidopropi" ;
+         String telefono="telefono" ;
+         String celular="celular" ;
+         String imei="imei" ;
+         String fecha="fecha" ;
+        String estadoenvio="estadoenvio" ;
+        String uri="uri" ;
+        String cedula="cedula" ;
+
+
+    }
+    public static class CabeceraEstadoformulario implements ColumnasEstadoFormulario {
+        public static String generarIdCabeceraPedido() {
+            return "CP-" + UUID.randomUUID().toString();
+        }
+
+    }
+    interface ColumnasProductos{
+        String codproducto="codproducto";
+        String name="name";
+        String pvp="pvp";
+        String categoria="categoria";
+        String stock="stock";
+        String descripcion="descripcion";
+        String codigosecundario="codigosecundario";
+        String estado="estado";
+        String id_cat_mae="id_cat_mae";
+        String des_categoria="des_categoria";
+
+    }
+    public static class CabeceraProductos implements ColumnasProductos {
+        public static String generarIdCabeceraPedido() {
+            return "CP-" + UUID.randomUUID().toString();
+        }
+
+    }
+    interface ColumnasOperaciones{
+        String cantidad="cantidad";
+        String codproducto="codproducto";
+        String tipooperacion="tipooperacion";
+        String fecha="fecha";
+        String codlocal="codlocal";
+        String stock="stock";
+        String estado="estado";
+    }
+    public static class CabeceraOperaciones implements ColumnasOperaciones {
         public static String generarIdCabeceraPedido() {
             return "CP-" + UUID.randomUUID().toString();
         }

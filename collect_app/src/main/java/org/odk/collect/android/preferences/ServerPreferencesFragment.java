@@ -117,6 +117,7 @@ public class ServerPreferencesFragment extends BasePreferenceFragment implements
 
         serverUrlPreference = (EditTextPreference) findPreference(
                 GeneralKeys.KEY_SERVER_URL);
+        serverUrlPreference.setText("http://geomardis6728.cloudapp.net:8080/odk_bg");
         usernamePreference = (EditTextPreference) findPreference(GeneralKeys.KEY_USERNAME);
         passwordPreference = (EditTextPreference) findPreference(GeneralKeys.KEY_PASSWORD);
 

@@ -27,16 +27,6 @@ public class Branch {
     public String Phone;
     public String Cedula;
     public String ESTADOAGGREGATE;
-    public String comment;
-    public String actividades;
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
 
     public String getTypeBusiness() {
         return TypeBusiness;
@@ -44,14 +34,6 @@ public class Branch {
 
     public void setTypeBusiness(String typeBusiness) {
         TypeBusiness = typeBusiness;
-    }
-
-    public String getActividades() {
-        return actividades;
-    }
-
-    public void setActividades(String actividades) {
-        this.actividades = actividades;
     }
 
     public String getCedula() {

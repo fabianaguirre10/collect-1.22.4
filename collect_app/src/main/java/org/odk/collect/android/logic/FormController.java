@@ -24,7 +24,9 @@ import org.javarosa.core.model.QuestionDef;
 import org.javarosa.core.model.SubmissionProfile;
 import org.javarosa.core.model.ValidateOutcome;
 import org.javarosa.core.model.condition.EvaluationContext;
+import org.javarosa.core.model.data.GeoPointData;
 import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.core.model.data.IntegerData;
 import org.javarosa.core.model.data.SelectOneData;
 import org.javarosa.core.model.data.StringData;
 import org.javarosa.core.model.data.helper.Selection;
@@ -46,9 +48,15 @@ import org.javarosa.model.xform.XPathReference;
 import org.javarosa.xform.parse.XFormParser;
 import org.javarosa.xpath.XPathParseTool;
 import org.javarosa.xpath.expr.XPathExpression;
+import org.odk.collect.android.database.BaseDatosEngine.Entidades.BranchProducto;
 import org.odk.collect.android.database.BaseDatosEngine.Entidades.BranchSession;
+import org.odk.collect.android.database.BaseDatosEngine.Entidades.ConfiguracionSession;
+import org.odk.collect.android.database.BaseDatosEngine.Entidades.EstadoEditar;
+import org.odk.collect.android.database.BaseDatosEngine.Entidades.EstadoFormularioSession;
 import org.odk.collect.android.exception.JavaRosaException;
 import org.odk.collect.android.external.ExternalDataUtil;
+import org.odk.collect.android.fragments.Activos;
+import org.odk.collect.android.fragments.mapa;
 import org.odk.collect.android.utilities.AuditEventLogger;
 import org.odk.collect.android.utilities.FileUtils;
 import org.odk.collect.android.utilities.RegexUtils;
@@ -1216,8 +1224,16 @@ public class FormController {
     public String getSubmissionMetadataUpdate(String CodigoBranch,String ruta,String nuevo ) {
         FormDef formDef =  formEntryController.getModel().getForm();
         TreeElement rootElement = formDef.getInstance().getRoot();
-        BranchSession obj= new
-                BranchSession();
+        BranchSession obj= new BranchSession();
+        EstadoFormularioSession objseccion= new EstadoFormularioSession();
+        ConfiguracionSession objconfiguracionSession = new ConfiguracionSession();
+        EstadoEditar objestado= new EstadoEditar();
+        Activos activos= new Activos();
+        mapa mapa= new mapa();
+
+
+
+
         TreeElement trueSubmissionElement;
         // Determine the information about the submission...
         SubmissionProfile p = formDef.getSubmissionProfile();
@@ -1232,29 +1248,106 @@ public class FormController {
             }
         }
 
+
+        /*Datos Estados Formularios*/
+        TreeElement DatosLocal = findDepthFirst(trueSubmissionElement, "datos_local");
+        TreeElement DatosPropietario = findDepthFirst(trueSubmissionElement, "PR");
+        TreeElement Estadoinsteres = findDepthFirst(trueSubmissionElement, "interes");
+
+
+        TreeElement Datosubicacion = findDepthFirst(trueSubmissionElement, "DR");
+
         // and find the depth-first meta block in this...
         TreeElement e = findDepthFirst(trueSubmissionElement, "ruta");
         TreeElement cl = findDepthFirst(trueSubmissionElement, "ST_2");
 
-//local divenpro
-        TreeElement localcoincidadyvenpor = findDepthFirst(trueSubmissionElement, "ruta");
-////////////////////////////////////////////
+
         /*grupo de local y propietario*/
         /*Store audit*/
-
-
         TreeElement local = findDepthFirst(trueSubmissionElement, "DL_CO");
         TreeElement propietario = findDepthFirst(trueSubmissionElement, "datos_propietario");
         TreeElement cedula = findDepthFirst(trueSubmissionElement, "DI");
+        TreeElement q_compra = findDepthFirst(trueSubmissionElement, "q_compra");
+        if(q_compra!=null){
+           q_compra.clearCaches();
+            for (BranchProducto bp:activos.getListapro()) {
+                List<TreeElement> sku = q_compra.getChildrenWithName(bp.getE_cantSku());
+                if (sku.size() == 1) {
+                    IntegerData sa = (IntegerData) sku.get(0).getValue();
+                    if (sa != null) {
+                        bp.setE_valor(sa.getValue().toString());
+                    }
+                }
 
-        /*validacion equipos frio*/
-        TreeElement equipos = findDepthFirst(trueSubmissionElement, "comment");
+            }
+            for (BranchProducto bp:mapa.getListapro()) {
+                List<TreeElement> sku = q_compra.getChildrenWithName(bp.getE_cantSku());
+                if (sku.size() == 1) {
+                    IntegerData sa = (IntegerData) sku.get(0).getValue();
+                    if (sa != null) {
+                        bp.setE_valor(sa.getValue().toString());
+
+
+                    }
+                }
+
+            }
+        }
+        if(q_compra!=null){
+            q_compra.clearCaches();
+            for (BranchProducto bp:activos.getListapro()) {
+                List<TreeElement> sku_stock = q_compra.getChildrenWithName("stock_"+bp.getE_codproducto());
+
+                if (sku_stock.size() == 1) {
+
+                    IntegerData sa = (IntegerData) sku_stock.get(0).getValue();
+                    if (sa != null) {
+                        IntegerData respuesta = new IntegerData();
+                        respuesta.setValue(Integer.valueOf((int) bp.getE_stock()));
+                        IAnswerData iAnswerData = (IAnswerData) respuesta;
+                        sku_stock.get(0).setValue(iAnswerData);
+                        if(bp.getE_stock()==0){
+                            q_compra.removeChildren("stock_"+bp.getE_codproducto());
+                        }else {
+                            sku_stock.get(0).clearChildrenCaches();
+                            sku_stock.get(0).clearCaches();
+                            if(q_compra.getChildrenWithName("stock_"+bp.getE_codproducto())==null)
+                                q_compra.addChild(sku_stock.get(0));
+                        }
+
+
+                    }
+                }
+
+            }
+            for (BranchProducto bp:mapa.getListapro()) {
+                List<TreeElement> sku_stock = q_compra.getChildrenWithName("stock_"+bp.getE_codproducto());
+
+                if (sku_stock.size() == 1) {
+                    IntegerData sa = (IntegerData) sku_stock.get(0).getValue();
+                    if (sa != null) {
+                        IntegerData respuesta = new IntegerData();
+                        respuesta.setValue(Integer.valueOf((int) bp.getE_stock()));
+                        IAnswerData iAnswerData = (IAnswerData) respuesta;
+                        sku_stock.get(0).setValue(iAnswerData);
+                        if(bp.getE_stock()==0){
+                            q_compra.removeChildren("stock_"+bp.getE_codproducto());
+
+                        }
+
+                    }
+                }
+
+            }
+        }
+
 
         /*valida existe o nuevo*/
         TreeElement existe_nuevo=findDepthFirst(trueSubmissionElement, "existe_nuevo");
-        if(existe_nuevo!=null){
+        if(existe_nuevo!=null) {
             existe_nuevo.setEnabled(false);
         }
+
         //TreeElement local = findDepthFirst(trueSubmissionElement, "TN");
         //RecorrerFormulario(trueSubmissionElement);
 
@@ -1265,173 +1358,283 @@ public class FormController {
         String instanceId = null;
         String instanceName = null;
         BranchSession objBranchSessioot=new BranchSession();
-        if(equipos!=null){
-            List<TreeElement> EQ_DATO;
-            EQ_DATO = equipos.getChildrenWithName("nota");
-            if ( EQ_DATO.size() == 1 ) {
-                StringData sa = (StringData) EQ_DATO.get(0).getValue();
-                if (sa != null) {
-                    if(objBranchSessioot.getE_comment()!="") {
-                        StringData respuesta = new StringData();
-                        respuesta.setValue(objBranchSessioot.getE_comment().replace("-","\n"));
-                        IAnswerData iAnswerData = (IAnswerData) respuesta;
-                        EQ_DATO.get(0).setValue(iAnswerData);
-                    }
-                }
-            }
+
+        //nombrelocal estadoformularios
+        objseccion.setE_code(obtenervalor(e,"cod","abierta"));
+        objseccion.setE_ruta(obtenervalor(e,"num_ruta","abierta"));
+        String nombrelocal1= ObtenerValorEstado(DatosLocal,"local_nombre",local,"coincide_local");
+        if(nombrelocal1!="")
+            objseccion.setE_nombrelocal(nombrelocal1);
+        else {
+            objseccion.setE_nombrelocal(objBranchSessioot.getE_name());
+
         }
-        if(propietario!=null){
-            List<TreeElement> nombrepropietario;
-            nombrepropietario = propietario.getChildrenWithName("nota_propietario");
-            if ( nombrepropietario.size() == 1 ) {
-                StringData sa = (StringData) nombrepropietario.get(0).getValue();
-                if (sa != null) {
-                    if(objBranchSessioot.getE_propietario()!="") {
-                        StringData respuesta = new StringData();
-                        respuesta.setValue(objBranchSessioot.getE_propietario());
-                        IAnswerData iAnswerData = (IAnswerData) respuesta;
-                        nombrepropietario.get(0).setValue(iAnswerData);
-                    }
-                }
-            }
+        //direccion local estadoformularios
+        String direccionlocal= ObtenerValorEstado(DatosLocal,"direccion_p",local,"coincide_direcc");
+        if(direccionlocal!="")
+            objseccion.setE_direccion(direccionlocal);
+        else {
+            objseccion.setE_direccion(objBranchSessioot.getE_mainStreet());
+
         }
-        if(cedula!=null){
-            List<TreeElement> cedulapropietario;
-            cedulapropietario = cedula.getChildrenWithName("ruc_ced");
-            if ( cedulapropietario.size() == 1 ) {
-                StringData sa = (StringData) cedulapropietario.get(0).getValue();
-                if (sa != null) {
-                    if(objBranchSessioot.getE_Cedula()!="" && (sa.equals(objBranchSessioot.getE_Cedula())||sa.equals("."))) {
-                        StringData respuesta = new StringData();
-                        respuesta.setValue(objBranchSessioot.getE_Cedula());
-                        IAnswerData iAnswerData = (IAnswerData) respuesta;
-                        cedulapropietario.get(0).setValue(iAnswerData);
-                    }
-                }
-            }
+        //Referencia local estadoformularios
+        String dreferencialocal= ObtenerValorEstado(DatosLocal,"referencia",local,"coincide_referencia");
+        if(dreferencialocal!="")
+            objseccion.setE_referencia(dreferencialocal);
+        else {
+            objseccion.setE_referencia(objBranchSessioot.getE_reference());
+
+        }
+        //barrio
+        objseccion.setE_barrio(obtenervalor(DatosLocal,"barrio","abierta"));
+
+        //datos del propietario
+        String nombrepropi=ObtenerValorEstado(DatosPropietario,"nombre_1",propietario,"coincide_propietario");
+        if(nombrepropi!="")
+            objseccion.setE_nombrepro(nombrepropi);
+        else {
+            objseccion.setE_nombrepro(objBranchSessioot.getE_propietario());
+
         }
 
-        if(localcoincidadyvenpor!=null) {
+        //cedula del propietario
+        String cedulapro=ObtenerValorEstado(DatosPropietario,"ced",propietario,"coincide_cedula");
+        if(nombrepropi!="")
+            objseccion.setE_cedula(cedulapro);
+        else {
+            objseccion.setE_cedula(objBranchSessioot.getE_Cedula());
 
-            List<TreeElement> direccion;
-
-
-            direccion = localcoincidadyvenpor.getChildrenWithName("nota_direcc");
-            if ( direccion.size() == 1 ) {
-                StringData sa = (StringData) direccion.get(0).getValue();
-                if (sa != null) {
-                    if(objBranchSessioot.getE_mainStreet()!="") {
-                        StringData respuesta = new StringData();
-                        respuesta.setValue(objBranchSessioot.getE_mainStreet());
-                        IAnswerData iAnswerData = (IAnswerData) respuesta;
-                        direccion.get(0).setValue(iAnswerData);
-                    }
-                }
-            }
         }
 
+        //apellidos
+        String apellidopropi=ObtenerValorEstado(DatosPropietario,"apellido_1",propietario,"coincide_propietario");
+        if(apellidopropi!="")
+            objseccion.setE_apellidopropi(apellidopropi);
 
-        if(local!=null){
-            List<TreeElement> nombrelocal;
-            List<TreeElement> direccion;
-            List<TreeElement> referencia;
-            List<TreeElement> TypeBusiness;
-            List<TreeElement> telefono;
-            nombrelocal = local.getChildrenWithName("nota_local");
-            direccion = local.getChildrenWithName("nota_direcc");
-            referencia = local.getChildrenWithName("nota_ref");
-            TypeBusiness = local.getChildrenWithName("nota_tiponeg");
-            telefono = local.getChildrenWithName("nota_telefono");
-            if ( nombrelocal.size() == 1 ) {
-                StringData sa = (StringData) nombrelocal.get(0).getValue();
-                if (sa != null) {
-                    if(objBranchSessioot.getE_name()!="") {
-                        StringData respuesta = new StringData();
-                        respuesta.setValue(objBranchSessioot.getE_name());
-                        IAnswerData iAnswerData = (IAnswerData) respuesta;
-                        nombrelocal.get(0).setValue(iAnswerData);
-                    }
-                }
-            }
 
-            if ( TypeBusiness.size() == 1 ) {
-                StringData sa = (StringData) TypeBusiness.get(0).getValue();
-                if (sa != null) {
-                    if(objBranchSessioot.getE_TypeBusiness()!="") {
-                        StringData respuesta = new StringData();
-                        respuesta.setValue(objBranchSessioot.getE_TypeBusiness());
-                        IAnswerData iAnswerData = (IAnswerData) respuesta;
-                        TypeBusiness.get(0).setValue(iAnswerData);
-                    }
-                }
-            }
-            if ( telefono.size() == 1 ) {
-                StringData sa = (StringData) telefono.get(0).getValue();
-                if (sa != null) {
-                    if(objBranchSessioot.getE_Phone()!="") {
-                        StringData respuesta = new StringData();
-                        respuesta.setValue(objBranchSessioot.getE_Phone());
-                        IAnswerData iAnswerData = (IAnswerData) respuesta;
-                        telefono.get(0).setValue(iAnswerData);
-                    }
-                }
-            }
+        //telefono
+        String telefonopropi=obtenervalor(Datosubicacion,"telefono","abierta");
+        if(telefonopropi!="")
+            objseccion.setE_telefono(telefonopropi);
 
-            if ( direccion.size() == 1 ) {
-                StringData sa = (StringData) direccion.get(0).getValue();
-                if (sa != null) {
-                    if(objBranchSessioot.getE_mainStreet()!="") {
-                        StringData respuesta = new StringData();
-                        respuesta.setValue(objBranchSessioot.getE_mainStreet());
-                        IAnswerData iAnswerData = (IAnswerData) respuesta;
-                        direccion.get(0).setValue(iAnswerData);
+
+        //celular
+        String celropi=obtenervalor(Datosubicacion,"celular2","abierta");
+        if(celropi!="")
+            objseccion.setE_celular(celropi);
+
+
+        //estadovisita
+        objseccion.setE_estadovisita(obtenervalor(e,"existe","una"));
+        //estado
+        objseccion.setE_estadointeres(obtenervalor(Estadoinsteres,"interesa_bdb","una"));
+        Object geo = null;
+        //Object geo  = obtenergeo(e,"coord");
+        if(geo!=null){
+            double[]res=(double[])geo;
+            //res[0]
+            objseccion.setE_latitud(String.valueOf(res[0]));
+            objseccion.setE_longitud(String.valueOf(res[1]));
+        }
+        objseccion.setE_IdCampania(objconfiguracionSession.getCnf_idcampania());
+        objseccion.setE_idAccount(objconfiguracionSession.getCnf_idAccount());
+        objseccion.setE_barrio(obtenervalor(DatosLocal,"barrio","abierta"));
+        if(objestado.getEstadoEdit().equals("1")) {
+
+
+            if (propietario != null) {
+                List<TreeElement> nombrepropietario;
+                nombrepropietario = propietario.getChildrenWithName("nota_propietario");
+                if (nombrepropietario.size() == 1) {
+                    StringData sa = (StringData) nombrepropietario.get(0).getValue();
+                    if (sa != null) {
+                        if (objBranchSessioot.getE_propietario() != "") {
+                            StringData respuesta = new StringData();
+                            respuesta.setValue(objBranchSessioot.getE_propietario());
+                            IAnswerData iAnswerData = (IAnswerData) respuesta;
+                            nombrepropietario.get(0).setValue(iAnswerData);
+                        }
                     }
                 }
             }
-            if ( referencia.size() == 1 ) {
-                StringData sa = (StringData) referencia.get(0).getValue();
-                if (sa != null) {
-                    if(objBranchSessioot.getE_reference()!="") {
-                        StringData respuesta = new StringData();
-                        respuesta.setValue(objBranchSessioot.getE_reference());
-                        IAnswerData iAnswerData = (IAnswerData) respuesta;
-                        referencia.get(0).setValue(iAnswerData);
+        }else{
+
+
+            if(objseccion.getE_nombrelocal().equals("name"))objseccion.setE_nombrelocal(obtenervalor(DatosLocal,"local_nombre","abierta"));
+            if(objseccion.getE_direccion().equals("mainStreet"))objseccion.setE_direccion(obtenervalor(DatosLocal,"direccion_p","abierta"));
+            if(objseccion.getE_referencia().equals("reference"))objseccion.setE_referencia(obtenervalor(DatosLocal,"referencia","abierta"));
+            if(objseccion.getE_nombrepro().equals("propietario"))objseccion.setE_nombrepro(obtenervalor(DatosPropietario,"nombre_1","abierta"));
+            objseccion.setE_apellidopropi(obtenervalor(DatosPropietario,"apellido_1","abierta"));
+            objseccion.setE_telefono(obtenervalor(Datosubicacion,"telefono","abierta"));
+            objseccion.setE_celular(obtenervalor(Datosubicacion,"celular2","abierta"));
+        }
+        if(objestado.getEstadoEdit().equals("1")) {
+            if (propietario != null) {
+                List<TreeElement> propietarioCD;
+                propietarioCD = propietario.getChildrenWithName("nota_cedula");
+                if (propietarioCD.size() == 1) {
+                    StringData sa = (StringData) propietarioCD.get(0).getValue();
+                    if (sa != null) {
+                        if (objBranchSessioot.getE_Cedula() != "" ) {
+                            StringData respuesta = new StringData();
+                            respuesta.setValue(objBranchSessioot.getE_Cedula());
+                            IAnswerData iAnswerData = (IAnswerData) respuesta;
+                            propietarioCD.get(0).setValue(iAnswerData);
+                        }
                     }
                 }
             }
 
         }
-
-        if(cl!=null){
-            List<TreeElement> colab;
-            colab = cl.getChildrenWithName("colabora");
-            if(colab.size()==1){
-                SelectOneData clb = (SelectOneData) colab.get(0).getValue();
-                if ( clb != null ) {
-                    Selection a = (Selection) clb.getValue();
-                    obj.setE_Colabora(a.getValue());
+        if(objestado.getEstadoEdit().equals("1")) {
+            if(e !=null ){
+                List<TreeElement> nombrelocal;
+                List<TreeElement> direccion;
+                List<TreeElement> propietarionombre;
+                List<TreeElement> cedulaprop;
+                nombrelocal = e.getChildrenWithName("nota_local");
+                direccion = e.getChildrenWithName("nota_direcc");
+                cedulaprop = e.getChildrenWithName("nota_cedula");
+                propietarionombre = e.getChildrenWithName("nota_propietario");
+                if (nombrelocal.size() == 1) {
+                    StringData sa = (StringData) nombrelocal.get(0).getValue();
+                    if (sa != null) {
+                        if (objBranchSessioot.getE_name() != "") {
+                            StringData respuesta = new StringData();
+                            respuesta.setValue(objBranchSessioot.getE_name());
+                            IAnswerData iAnswerData = (IAnswerData) respuesta;
+                            nombrelocal.get(0).setValue(iAnswerData);
+                        }
+                    }
                 }
+                if (direccion.size() == 1) {
+                    StringData sa = (StringData) direccion.get(0).getValue();
+                    if (sa != null) {
+                        if (objBranchSessioot.getE_mainStreet() != "") {
+                            StringData respuesta = new StringData();
+                            respuesta.setValue(objBranchSessioot.getE_mainStreet());
+                            IAnswerData iAnswerData = (IAnswerData) respuesta;
+                            direccion.get(0).setValue(iAnswerData);
+                        }
+                    }
+                }
+                if (propietarionombre.size() == 1) {
+                    StringData sa = (StringData) propietarionombre.get(0).getValue();
+                    if (sa != null) {
+                        if (objBranchSessioot.getE_propietario() != "") {
+                            StringData respuesta = new StringData();
+                            respuesta.setValue(objBranchSessioot.getE_propietario());
+                            IAnswerData iAnswerData = (IAnswerData) respuesta;
+                            propietarionombre.get(0).setValue(iAnswerData);
+                        }
+                    }
+                }
+                if (cedulaprop.size() == 1) {
+                    StringData sa = (StringData) cedulaprop.get(0).getValue();
+                    if (sa != null) {
+                        if (objBranchSessioot.getE_Cedula() != "") {
+                            StringData respuesta = new StringData();
+                            respuesta.setValue(objBranchSessioot.getE_Cedula());
+                            IAnswerData iAnswerData = (IAnswerData) respuesta;
+                            cedulaprop.get(0).setValue(iAnswerData);
+                        }
+                    }
+                }
+
             }
 
+
+            if (local != null) {
+                List<TreeElement> nombrelocal;
+                List<TreeElement> direccion;
+                List<TreeElement> referencia;
+                List<TreeElement> TypeBusiness;
+                List<TreeElement> telefono;
+                nombrelocal = local.getChildrenWithName("nota_local");
+                direccion = local.getChildrenWithName("nota_direcc");
+                referencia = local.getChildrenWithName("nota_ref");
+                TypeBusiness = local.getChildrenWithName("nota_tiponeg");
+                telefono = local.getChildrenWithName("nota_telefono");
+                if (nombrelocal.size() == 1) {
+                    StringData sa = (StringData) nombrelocal.get(0).getValue();
+                    if (sa != null) {
+                        if (objBranchSessioot.getE_name() != "") {
+                            StringData respuesta = new StringData();
+                            respuesta.setValue(objBranchSessioot.getE_name());
+                            IAnswerData iAnswerData = (IAnswerData) respuesta;
+                            nombrelocal.get(0).setValue(iAnswerData);
+                        }
+                    }
+                }
+
+                if (TypeBusiness.size() == 1) {
+                    StringData sa = (StringData) TypeBusiness.get(0).getValue();
+                    if (sa != null) {
+                        if (objBranchSessioot.getE_TypeBusiness() != "") {
+                            StringData respuesta = new StringData();
+                            respuesta.setValue(objBranchSessioot.getE_TypeBusiness());
+                            IAnswerData iAnswerData = (IAnswerData) respuesta;
+                            TypeBusiness.get(0).setValue(iAnswerData);
+                        }
+                    }
+                }
+                if (telefono.size() == 1) {
+                    StringData sa = (StringData) telefono.get(0).getValue();
+                    if (sa != null) {
+                        if (objBranchSessioot.getE_Phone() != "") {
+                            StringData respuesta = new StringData();
+                            respuesta.setValue(objBranchSessioot.getE_Phone());
+                            IAnswerData iAnswerData = (IAnswerData) respuesta;
+                            telefono.get(0).setValue(iAnswerData);
+                        }
+                    }
+                }
+
+                if (direccion.size() == 1) {
+                    StringData sa = (StringData) direccion.get(0).getValue();
+                    if (sa != null) {
+                        if (objBranchSessioot.getE_mainStreet() != "") {
+                            StringData respuesta = new StringData();
+                            respuesta.setValue(objBranchSessioot.getE_mainStreet());
+                            IAnswerData iAnswerData = (IAnswerData) respuesta;
+                            direccion.get(0).setValue(iAnswerData);
+                        }
+                    }
+                }
+                if (referencia.size() == 1) {
+                    StringData sa = (StringData) referencia.get(0).getValue();
+                    if (sa != null) {
+                        if (objBranchSessioot.getE_reference() != "") {
+                            StringData respuesta = new StringData();
+                            respuesta.setValue(objBranchSessioot.getE_reference());
+                            IAnswerData iAnswerData = (IAnswerData) respuesta;
+                            referencia.get(0).setValue(iAnswerData);
+                        }
+                    }
+                }
+
+            }
+        }
+        if(objestado.getEstadoEdit().equals("1")) {
+            if (cl != null) {
+                List<TreeElement> colab;
+                colab = cl.getChildrenWithName("colabora");
+                if (colab.size() == 1) {
+                    SelectOneData clb = (SelectOneData) colab.get(0).getValue();
+                    if (clb != null) {
+                        Selection a = (Selection) clb.getValue();
+                        obj.setE_Colabora(a.getValue());
+                    }
+                }
+
+            }
         }
         if ( e != null ) {
-
             List<TreeElement> v;
             List<TreeElement> r;
             List<TreeElement> ch;
             List<TreeElement> notalocal;
             List<TreeElement> tiponegocio;
-            List<TreeElement> note1;
-            List<TreeElement> text1;
-
-            List<TreeElement> calculate1;
-            List<TreeElement> semana;
-
-            note1=e.getChildrenWithName("actividades");
-            text1=e.getChildrenWithName("text1");
-            calculate1=e.getChildrenWithName("calculate1");
-            semana=e.getChildrenWithName("comment");
-
             // instance id...
             v = e.getChildrenWithName("cod");
             r = e.getChildrenWithName("num_ruta");
@@ -1439,147 +1642,98 @@ public class FormController {
 
             notalocal = e.getChildrenWithName("nota_local");
             tiponegocio = e.getChildrenWithName("nota_tiponeg");
-            if ( semana.size() == 1 ) {
+            if(objestado.getEstadoEdit().equals("1")) {
+                if (nuevo == "nuevo") {
+                    if (existe_nuevo != null) {
+                        StringData n = (StringData) existe_nuevo.getValue();
+                        n.setValue("Nuevo");
 
-                StringData  sa = (StringData) semana.get(0).getValue();
-                if ( sa != null ) {
-                    if(objBranchSessioot.getE_comment()!="X" && objBranchSessioot.getE_comment()!=null) {
-                        StringData respuesta = new StringData();
-                        respuesta.setValue(objBranchSessioot.getE_comment());
-                        IAnswerData iAnswerData = (IAnswerData) respuesta;
-                        semana.get(0).setValue(iAnswerData);
+
+                    }
+                } else {
+                    if (existe_nuevo != null) {
+                        StringData n = (StringData) existe_nuevo.getValue();
+                        n.setValue("del Listado");
 
                     }
                 }
             }
-            if ( note1.size() == 1 ) {
-
-                StringData  sa = (StringData) note1.get(0).getValue();
-                if ( sa != null ) {
-                    if(objBranchSessioot.getE_actividades()!="X" && objBranchSessioot.getE_actividades()!=null) {
-                        StringData respuesta = new StringData();
-                        respuesta.setValue(objBranchSessioot.getE_actividades());
-                        IAnswerData iAnswerData = (IAnswerData) respuesta;
-
-                        note1.get(0).setValue(iAnswerData);
+            if(objestado.getEstadoEdit().equals("1")) {
+                if (ch.size() == 1) {
+                    SelectOneData sa = (SelectOneData) ch.get(0).getValue();
+                    if (sa != null) {
+                        Selection a = (Selection) sa.getValue();
+                        obj.setE_EstadoFormulario(a.getValue());
+                        if (nuevo == "nuevo") {
+                            // a.xmlValue = "nuevo";
+                        }
+                    } else {
+                        obj.setE_EstadoFormulario("nuevo");
                     }
                 }
             }
-            if ( text1.size() == 1 ) {
-                StringData  sa = (StringData) text1.get(0).getValue();
-                if ( sa != null ) {
-                    if(objBranchSessioot.getE_actividades()!="X" && objBranchSessioot.getE_actividades()!=null) {
-                        StringData respuesta = new StringData();
-                        respuesta.setValue(objBranchSessioot.getE_actividades());
-                        IAnswerData iAnswerData = (IAnswerData) respuesta;
-                        text1.get(0).setValue(iAnswerData);
+            if(objestado.getEstadoEdit().equals("1")) {
+                if (r.size() == 1) {
+                    StringData sa = (StringData) r.get(0).getValue();
+                    if (sa != null) {
+
+                        if (ruta != "" && ruta != null) {
+                            StringData respuesta = new StringData();
+                            respuesta.setValue(ruta);
+                            IAnswerData iAnswerData = (IAnswerData) respuesta;
+                            r.get(0).setValue(iAnswerData);
+                            instanceId = "";
+                        }
                     }
                 }
-            }
-            if ( calculate1.size() == 1 ) {
-                StringData  sa = (StringData) calculate1.get(0).getValue();
-                if ( sa != null ) {
-                    if(objBranchSessioot.getE_actividades()!="X" && objBranchSessioot.getE_actividades()!=null) {
-                        StringData respuesta = new StringData();
-                        respuesta.setValue(objBranchSessioot.getE_actividades());
-                        IAnswerData iAnswerData = (IAnswerData) respuesta;
-                        calculate1.get(0).setValue(iAnswerData);
+                if (tiponegocio.size() == 1) {
+                    StringData sa = (StringData) tiponegocio.get(0).getValue();
+                    if (sa != null) {
+
+
+                        if (objBranchSessioot.getE_TypeBusiness() != "" && objBranchSessioot.getE_TypeBusiness() != null) {
+                            StringData respuesta = new StringData();
+                            respuesta.setValue(objBranchSessioot.getE_TypeBusiness());
+                            IAnswerData iAnswerData = (IAnswerData) respuesta;
+                            tiponegocio.get(0).setValue(iAnswerData);
+                            instanceId = "";
+                        }
                     }
                 }
-            }
+                if (notalocal.size() == 1) {
+                    StringData sa = (StringData) notalocal.get(0).getValue();
+                    if (sa != null) {
 
 
-            if (nuevo == "nuevo") {
-                if (existe_nuevo != null) {
-                    StringData n = (StringData) existe_nuevo.getValue();
-                    n.setValue("Nuevo");
-
-
-
-                }
-            } else {
-                if (existe_nuevo != null) {
-                    StringData n = (StringData) existe_nuevo.getValue();
-                    n.setValue("del Listado");
-
-                }
-            }
-
-            if (ch.size() == 1 ) {
-                SelectOneData sa = (SelectOneData) ch.get(0).getValue();
-                if (sa != null) {
-                    Selection a = (Selection) sa.getValue();
-                    obj.setE_EstadoFormulario(a.getValue());
-                    if (nuevo == "nuevo") {
-                        a.xmlValue = "nuevo";
-
-
+                        if (objBranchSessioot.getE_name() != "" && objBranchSessioot.getE_name() != null) {
+                            StringData respuesta = new StringData();
+                            respuesta.setValue(objBranchSessioot.getE_name());
+                            IAnswerData iAnswerData = (IAnswerData) respuesta;
+                            notalocal.get(0).setValue(iAnswerData);
+                            instanceId = "";
+                        }
                     }
-                }else{
-                    obj.setE_EstadoFormulario("nuevo");
                 }
-            }
+                if (v.size() == 1) {
+                    StringData sa = (StringData) v.get(0).getValue();
+                    if (sa != null) {
 
-            if ( r.size() == 1 ) {
-                StringData  sa = (StringData) r.get(0).getValue();
-                if ( sa != null ) {
-
-                    if(ruta!="" && ruta!=null ) {
-                        StringData respuesta = new StringData();
-                        respuesta.setValue(ruta);
-                        IAnswerData iAnswerData = (IAnswerData) respuesta;
-                        r.get(0).setValue(iAnswerData);
+                        if (CodigoBranch != "") {
+                            StringData respuesta = new StringData();
+                            respuesta.setValue(CodigoBranch);
+                            IAnswerData iAnswerData = (IAnswerData) respuesta;
+                            v.get(0).setValue(iAnswerData);
+                        }
                         instanceId = "";
-                    }
-                }
-            }
-            if ( tiponegocio.size() == 1 ) {
-                StringData  sa = (StringData) tiponegocio.get(0).getValue();
-                if ( sa != null ) {
+                    } else {
+                        if (CodigoBranch != "") {
+                            StringData respuesta = new StringData();
+                            respuesta.setValue(CodigoBranch);
+                            IAnswerData iAnswerData = (IAnswerData) respuesta;
+                            v.get(0).setValue(iAnswerData);
+                            e.getChildrenWithName("cod").get(0).setValue(iAnswerData);
 
-
-                    if(objBranchSessioot.getE_TypeBusiness()!="" && objBranchSessioot.getE_TypeBusiness()!=null) {
-                        StringData respuesta = new StringData();
-                        respuesta.setValue(objBranchSessioot.getE_TypeBusiness());
-                        IAnswerData iAnswerData = (IAnswerData) respuesta;
-                        tiponegocio.get(0).setValue(iAnswerData);
-                        instanceId = "";
-                    }
-                }
-            }
-            if ( notalocal.size() == 1 ) {
-                StringData  sa = (StringData) notalocal.get(0).getValue();
-                if ( sa != null ) {
-
-
-                    if(objBranchSessioot.getE_name()!="" && objBranchSessioot.getE_name()!=null) {
-                        StringData respuesta = new StringData();
-                        respuesta.setValue(objBranchSessioot.getE_name());
-                        IAnswerData iAnswerData = (IAnswerData) respuesta;
-                        notalocal.get(0).setValue(iAnswerData);
-                        instanceId = "";
-                    }
-                }
-            }
-            if ( v.size() == 1 ) {
-                StringData sa = (StringData) v.get(0).getValue();
-                if ( sa != null  ) {
-
-                    if(CodigoBranch!="") {
-                        StringData respuesta = new StringData();
-                        respuesta.setValue(CodigoBranch);
-                        IAnswerData iAnswerData = (IAnswerData) respuesta;
-                        v.get(0).setValue(iAnswerData);
-                    }
-                    instanceId = "";
-                }else{
-                    if(CodigoBranch!="") {
-                        StringData respuesta = new StringData();
-                        respuesta.setValue(CodigoBranch);
-                        IAnswerData iAnswerData = (IAnswerData) respuesta;
-                        v.get(0).setValue(iAnswerData);
-                        e.getChildrenWithName("cod").get(0).setValue(iAnswerData);
-
+                        }
                     }
                 }
             }
@@ -1595,6 +1749,84 @@ public class FormController {
         }
 
         return instanceId;
+    }
+    public Object obtenergeo(TreeElement elemento,String e_nombre)
+    {
+        Object reultado=null;
+
+        if (elemento != null) {
+            List<TreeElement> local_nombre;
+            local_nombre = elemento.getChildrenWithName(e_nombre);
+            GeoPointData sa = (GeoPointData) local_nombre.get(0).getValue();
+            if (sa != null) {
+                reultado=sa.getValue();
+                //Dato = sa.getValue().toString();
+            }
+        }
+        return reultado;
+
+    }
+    public  String obtenervalor(TreeElement elemento,String e_nombre,String tipo){
+        String Dato="";
+        if(tipo=="abierta") {
+            if (elemento != null) {
+                List<TreeElement> local_nombre;
+                local_nombre = elemento.getChildrenWithName(e_nombre);
+                if(local_nombre.size()!=0) {
+                    StringData sa = (StringData) local_nombre.get(0).getValue();
+                    if (sa != null) {
+                        Dato = sa.getValue().toString();
+                    }
+                }
+            }
+        }
+        if(tipo=="una") {
+            if (elemento != null) {
+                List<TreeElement> local_nombre;
+                local_nombre = elemento.getChildrenWithName(e_nombre);
+                if(local_nombre.size()!=0) {
+                    SelectOneData sa = (SelectOneData) local_nombre.get(0).getValue();
+                    if (sa != null) {
+                        Selection a = (Selection) sa.getValue();
+                        Dato = a.getValue();
+                    }
+                }
+            }
+        }
+
+
+
+        return Dato;
+    }
+
+    public String ObtenerValorEstado(TreeElement elemento,String e_nombre,TreeElement validador,String campovalidador)
+    {
+        String Dato="";
+        if(elemento!=null) {
+            List<TreeElement> local_nombre;
+            local_nombre = elemento.getChildrenWithName(e_nombre);
+            if (local_nombre.size() != 0) {
+                if (validador != null) {
+                    ////nombre local
+                    List<TreeElement> coincide_local;
+                    StringData sa = (StringData) local_nombre.get(0).getValue();
+                    coincide_local = validador.getChildrenWithName(campovalidador);
+                    if (coincide_local.size() == 1) {
+                        SelectOneData clb = (SelectOneData) coincide_local.get(0).getValue();
+                        if (clb != null) {
+                            Selection a = (Selection) clb.getValue();
+                            if (a.getValue().equals("no") && sa != null) {
+
+                                Dato = sa.getValue().toString();
+                            }
+                        }
+                    }
+
+                }
+
+            }
+        }
+        return Dato;
     }
     /**
      * Get the OpenRosa required metadata of the portion of the form beng submitted
